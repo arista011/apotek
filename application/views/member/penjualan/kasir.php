@@ -7,7 +7,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 <head>
 	<meta charset="UTF-8">
 	<link rel="shortcut icon" href="<?php echo base_url() ?>/assets/images/favicon.png" type="image/ico">
-	<title>Apotek Salam</title>
+	<title><?php echo $this->db->get_where('profil_apotek', array('id' => '1'), 1)->row()->nama_apotek; ?></title>
 	<meta name="author" content="Paber">
 	<!-- Mobile Metas -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -1356,7 +1356,15 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					$('#customer_dipilih').val('');
 					$('#modal-payment').modal('hide');
 					var url = "<?php echo base_url('penjualan/generate_invoice/'); ?>" + data.keranjangdetail_input.id_penjualan;
-					window.open(url);
+					var printWindow = window.open(url); // Buka tautan dalam jendela baru
+
+					printWindow.onload = function() { // Tunggu hingga jendela baru dimuat sepenuhnya
+						printWindow.print(); // Cetak halaman
+						printWindow.onafterprint = function() { // Tunggu hingga pencetakan selesai
+							printWindow.close(); // Tutup jendela cetak
+						}
+					};
+
 				}
 			}).fail(function(data) {
 				new PNotify({
@@ -1370,18 +1378,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			});
 			e.preventDefault();
 		});
-
-		function printModal(url) {
-			$.ajax({
-				url: url,
-				success: function(response) {
-					var printWindow = window.open('', '_blank');
-					printWindow.document.write(response);
-					printWindow.document.close();
-					printWindow.print();
-				}
-			});
-		}
 	</script>
 </body>
 
