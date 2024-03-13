@@ -109,6 +109,63 @@ defined('BASEPATH') or exit('No direct script access allowed');
 		<div class="inner-wrapper">
 			<!-- start: page -->
 			<div class="row">
+				<div class="col-md-12 col-lg-7 col-xl-7">
+					<section class="panel-featured-right panel-featured-primary">
+						<div class="panel-body">
+							<div class="input-group mb-md">
+								<input type="text" class="form-control" id="keywords" placeholder="Search Product Keyword" onkeyup="searchFilter()">
+								<a class="input-group-addon btn-success btn"><i class="fa fa-search"></i></a>
+								<select id="sortBy" onchange="searchFilter()" class="form-control">
+									<option value="">Sort By</option>
+									<option value="asc">Ascending</option>
+									<option value="desc">Descending</option>
+								</select>
+							</div>
+
+							<div class="row mg-files" id="postList" style="max-height: 500px;overflow-y: scroll;">
+
+								<!-- END Product-->
+								<?php if (!empty($posts)) : foreach ($posts as $post) : ?>
+
+										<div class="col-sm-12 col-md-3 col-lg-3">
+											<div class="detail">
+												<div class="thumb-preview">
+													<img src="<?php echo base_url() ?>/images/<?php echo $post['gambar']; ?>" class="img-responsive fit-image" alt="Foto Produk">
+												</div>
+												<span class="mg-title nama_produk">
+													<?php if ($post['jenis'] == 'racikan') echo "<b>[racikan]</b>"; ?> <?php echo $post['nama_item']; ?>
+												</span>
+												<div class="row">
+													<div class="col-md-12">
+														<span class="text-bold">
+															<?php echo rupiah($post['harga_jual']); ?>
+														</span>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-12">
+														<a id="beli-item<?php echo $post['kode_item']; ?>" class="btn btn-xs btn-success" onclick="beli(this)" data-barcode="<?php echo $post['kode_item']; ?>"><i class="fa fa-shopping-cart"></i> Beli Produk</a>
+													</div>
+												</div>
+											</div>
+										</div>
+									<?php endforeach;
+								else : ?>
+									<div class="col-sm-12 col-md-12 col-lg-12">
+										<p>Product not available.</p>
+									</div>
+								<?php endif; ?>
+								<div class="col-sm-12 col-md-12 col-lg-12">
+									<ul class="pagination">
+										<?php echo $this->ajax_pagination->create_links(); ?>
+									</ul>
+								</div>
+
+								<!-- END PRoduct-->
+							</div>
+						</div>
+					</section>
+				</div>
 				<div class="col-md-12  col-xl-5 col-lg-5">
 					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
@@ -185,64 +242,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 							</div>
 						</div>
 					</section>
-				</div>
-				<div class="col-md-12 col-lg-7 col-xl-7">
-					<section class="panel-featured-right panel-featured-primary">
+					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
-							<div class="input-group mb-md">
-								<input type="text" class="form-control" id="keywords" placeholder="Search Product Keyword" onkeyup="searchFilter()">
-								<a class="input-group-addon btn-success btn"><i class="fa fa-search"></i></a>
-								<select id="sortBy" onchange="searchFilter()" class="form-control">
-									<option value="">Sort By</option>
-									<option value="asc">Ascending</option>
-									<option value="desc">Descending</option>
-								</select>
-							</div>
-
-							<div class="row mg-files" id="postList" style="max-height: 500px;overflow-y: scroll;">
-
-								<!-- END Product-->
-								<?php if (!empty($posts)) : foreach ($posts as $post) : ?>
-
-										<div class="col-sm-12 col-md-3 col-lg-3">
-											<div class="thumbnail">
-												<div class="thumb-preview">
-													<img src="<?php echo base_url() ?>/images/<?php echo $post['gambar']; ?>" class="img-responsive fit-image" alt="Foto Produk">
-												</div>
-												<span class="mg-title nama_produk">
-													<?php if ($post['jenis'] == 'racikan') echo "<b>[racikan]</b>"; ?> <?php echo $post['nama_item']; ?>
-												</span>
-												<div class="row">
-													<div class="col-md-12">
-														<span class="text-bold">
-															<?php echo rupiah($post['harga_jual']); ?>
-														</span>
-													</div>
-												</div>
-												<div class="row">
-													<div class="col-md-12">
-														<a id="beli-item<?php echo $post['kode_item']; ?>" class="btn btn-xs btn-success" onclick="beli(this)" data-barcode="<?php echo $post['kode_item']; ?>"><i class="fa fa-shopping-cart"></i> Beli Produk</a>
-													</div>
-												</div>
-											</div>
-										</div>
-									<?php endforeach;
-								else : ?>
-									<div class="col-sm-12 col-md-12 col-lg-12">
-										<p>Product not available.</p>
-									</div>
-								<?php endif; ?>
-								<div class="col-sm-12 col-md-12 col-lg-12">
-									<ul class="pagination">
-										<?php echo $this->ajax_pagination->create_links(); ?>
-									</ul>
-								</div>
-
-								<!-- END PRoduct-->
+							<div class="panel-body  table-responsive">
+								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="data">
+									<thead>
+										<tr>
+											<th>Tanggal</th>
+											<th>Nomor Invoice</th>
+											<th>Total Harga</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
 							</div>
 						</div>
 					</section>
 				</div>
+
 			</div>
 			<!-- end: page -->
 		</div>
@@ -717,6 +735,28 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.js"></script>
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.init.js"></script>
 	<script>
+		var tablepo = $("#data").dataTable({
+			serverSide: false, // Set serverSide ke false karena kita mengambil data di sisi server
+			ajax: {
+				"url": "<?php echo base_url() ?>penjualan/listpenjualan",
+				"type": "GET",
+				"dataSrc": "" // Menghilangkan root data untuk memastikan DataTables memproses array langsung
+			},
+			columns: [{
+					"data": "tanggal"
+				},
+				{
+					"data": "id"
+				},
+				{
+					"data": "total"
+				}
+			],
+			order: [
+				[0, 'DESC']
+			]
+		});
+
 		function paymentsubmit(total, dibayar) {
 			if (total <= dibayar) {
 				document.getElementById("submitPayment").removeAttribute('disabled');

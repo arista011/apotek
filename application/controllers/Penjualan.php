@@ -564,4 +564,19 @@ class Penjualan extends CI_Controller
         $data['penjualan'] = $get_detail->get_penjualan_detail($kode_penjualan);
         $this->load->view('member/penjualan/invoice', $data, false);
     }
+
+    public function update_invoice($id_penjualan)
+    {
+        $this->load->model('penjualan_model');
+        $get_detail = $this->penjualan_model;
+        $data['id'] = $get_detail->get_penjualan($id_penjualan);
+    }
+
+    public function listpenjualan()
+    {
+        cekajax();
+        header('Content-Type: application/json');
+        $listjual = $this->penjualan_model->_list_penjualan();
+        echo json_encode($listjual);
+    }
 }

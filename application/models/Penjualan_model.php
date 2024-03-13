@@ -5,6 +5,7 @@ require './mike42/autoload.php';
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use phpDocumentor\Reflection\Types\This;
 
 class Penjualan_model extends CI_Model
 {
@@ -401,6 +402,15 @@ class Penjualan_model extends CI_Model
             return $kode;
         }
     }
+
+    function getpenjualan()
+    {
+
+        $this->db->select('*');
+        $this->db->from('penjualan');
+        return $this->db->get()->result();
+    }
+
     function submitpayment()
     {
         $post = $this->input->post();
@@ -653,6 +663,15 @@ class Penjualan_model extends CI_Model
         $this->db->join('master_admin', 'penjualan.id_admin = master_admin.id');
         $this->db->join('master_item', 'penjualan_detail.kode_item = master_item.kode_item'); // New JOIN clause
         $this->db->where('penjualan.id', $id_penjualan);
+
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    public function _list_penjualan()
+    {
+        $this->db->select('id, total, tanggal');
+        $this->db->from('penjualan');
 
         $query = $this->db->get();
         return $query->result();
