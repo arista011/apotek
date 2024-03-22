@@ -8,7 +8,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<!-- Basic -->
 	<meta charset="UTF-8">
 	<link rel="shortcut icon" href="<?php echo base_url() ?>/assets/images/favicon.png" type="image/ico">
-	<title>Apotek Mama</title>
+	<title><?php echo $this->db->get_where('profil_apotek', array('id' => '1'), 1)->row()->nama_apotek; ?></title>
 	<meta name="keywords" content="Aplikasi salon kecantikan" />
 	<meta name="author" content="Manigom">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />

@@ -579,4 +579,33 @@ class Penjualan extends CI_Controller
         $listjual = $this->penjualan_model->_list_penjualan();
         echo json_encode($listjual);
     }
+
+    public function editpenjualan()
+    {
+        cekajax();
+        $idd = $this->penjualan_model;
+        $query = $this->penjualan_model->_penjualan_detail($idd);
+        foreach ($query as $data) {
+            $result = array(
+                "penjualan.id" => $this->security->xss_clean($data['id']),
+                "penjualan.total" => $this->security->xss_clean(data['total']),
+                "penjualan.tanggal" => $this->security->xss_clean($data['tanggal'])
+
+            );
+        }
+
+        $detailpo = $this->db->get_where('penjualan_detail', array('id_penjualan' => $idd));
+        foreach ($detailpo->result() as $r) {
+            $r->total = $r->kuantiti * $r->harga;
+            $subArray['kode_item'] = $this->security->xss_clean($r->kode_item);
+            $subArray['nama_item'] = $this->security->xss_clean($r->nama_item);
+            $subArray['kuantiti'] = $this->security->xss_clean($r->kuantiti);
+            $subArray['harga'] = $this->security->xss_clean(rupiah($r->harga));
+            $subArray['total'] = $this->security->xss_clean(rupiah($r->total));
+            $arraysub[] =  $subArray;
+        }
+        $datasub = $arraysub;
+        $array[] =  $result;
+        echo '{"datarows":' . json_encode($array) . ',"datasub":' . json_encode($datasub) . '}';
+    }
 }

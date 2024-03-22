@@ -55,6 +55,14 @@ defined('BASEPATH') or exit('No direct script access allowed');
                                                             </a>
                                                         </div>
                                                     </li>
+                                                    <li>
+                                                        <a href="<?php echo base_url() ?>user/shift" class="menu-item"><i class="fa fa-folder"></i> User Shift</a>
+                                                        <div class="item-options">
+                                                            <a href="<?php echo base_url() ?>user/user">
+                                                                <i class="fa fa-arrow-circle-o-left"></i>
+                                                            </a>
+                                                        </div>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>

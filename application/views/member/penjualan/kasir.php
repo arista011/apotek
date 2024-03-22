@@ -248,6 +248,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="data">
 									<thead>
 										<tr>
+											<th></th>
 											<th>Tanggal</th>
 											<th>Nomor Invoice</th>
 											<th>Total Harga</th>
@@ -735,27 +736,65 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.js"></script>
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.init.js"></script>
 	<script>
-		var tablepo = $("#data").dataTable({
-			serverSide: false, // Set serverSide ke false karena kita mengambil data di sisi server
-			ajax: {
-				"url": "<?php echo base_url() ?>penjualan/listpenjualan",
-				"type": "GET",
-				"dataSrc": "" // Menghilangkan root data untuk memastikan DataTables memproses array langsung
-			},
-			columns: [{
-					"data": "tanggal"
+		$(document).ready(function() {
+			$('#data').DataTable({
+				"ajax": {
+					"url": "<?php echo base_url('penjualan/listpenjualan'); ?>",
+					"type": "GET",
+					"dataSrc": ""
 				},
-				{
-					"data": "id"
-				},
-				{
-					"data": "total"
-				}
-			],
-			order: [
-				[0, 'DESC']
-			]
+				"columns": [{
+						"data": null,
+						"render": function(data, type, row, meta) {
+							return '<button class="btn btn-info btn-sm" onclick="editPenjualan(' + row.id + ')">Edit</button>';
+						}
+					},
+					{
+						"data": "tanggal"
+					},
+					{
+						"data": "id"
+					},
+					{
+						"data": "total"
+					}
+				]
+			});
 		});
+
+		function editPenjualan(idd) {
+			$.ajax({
+				url: '<?php echo base_url('penjualan/edit_penjualan') ?>/' + idd,
+				type: 'GET',
+				dataType: 'json',
+				success: function(response) {
+					var items = response.items;
+					var html = '<table class="table">';
+					html += '<thead><tr><th>Kode Item</th><th>Nama Item</th><th>Kuantiti</th><th>Harga</th><th>Total</th></tr></thead>';
+					html += '<tbody>';
+					for (var i = 0; i < items.length; i++) {
+						var total = items[i].kuantiti * items[i].harga;
+						html += '<tr>';
+						html += '<td>' + items[i].kode_item + '</td>';
+						html += '<td>' + items[i].nama_item + '</td>';
+						html += '<td><input type="number" class="form-control" id="kuantiti_' + items[i].id + '" value="' + items[i].kuantiti + '"></td>';
+						html += '<td>' + items[i].harga + '</td>';
+						html += '<td>' + total + '</td>';
+						html += '</tr>';
+					}
+					html += '</tbody>';
+					html += '</table>';
+
+					// Tampilkan data dalam modal
+					$('#modal_body').html(html);
+					$('#modal_edit').modal('show'); // Memastikan modal muncul
+				},
+				error: function(xhr, status, error) {
+					console.error(xhr.responseText);
+					alert('Terjadi kesalahan saat memuat data penjualan.');
+				}
+			});
+		}
 
 		function paymentsubmit(total, dibayar) {
 			if (total <= dibayar) {
