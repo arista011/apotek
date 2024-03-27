@@ -668,9 +668,13 @@ class Penjualan_model extends CI_Model
         return $query->result();
     }
 
-    public function _list_penjualan()
+    public function _list_penjualan($idd = null)
     {
-        $this->db->select('id,total,tanggal');
+        if ($idd !== null) {
+            $this->db->where('id', $idd);
+        }
+
+        $this->db->select('id, total, tanggal');
         $this->db->from('penjualan');
 
         $query = $this->db->get();
@@ -679,11 +683,11 @@ class Penjualan_model extends CI_Model
 
     public function edit_penjualan($idd)
     {
-        $this->db->select('a.id, a.total, a.tanggal');
-        $this->db->from('penjualan a');
-        $this->db->join('penjualan_detail b', 'a.id = b.id_penjualan');
-        $this->db->join('masater_item c', 'b.kode_item = c.kode_item');
-        $this->db->where('a.id', $idd, 'b.id_penjualan');
+        $this->db->select('a.kode_item, c.nama_item, a.harga, a.kuantiti, a.total');
+        $this->db->from('penjualan_detail a');
+        $this->db->join('penjualan b', 'a.id_penjualan = b.id');
+        $this->db->join('master_item c', 'a.kode_item = c.kode_item');
+        $this->db->where('a.id_penjualan', $idd);
 
         $query = $this->db->get();
         return $query->result();

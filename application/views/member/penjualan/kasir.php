@@ -245,7 +245,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
 							<div class="panel-body  table-responsive">
-								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="data">
+								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
 									<thead>
 										<tr>
 											<th></th>
@@ -266,6 +266,69 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			<!-- end: page -->
 		</div>
 	</section>
+
+	<div class="modal fade bd-example-modal-lg" id="editData" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" style="width:90%">
+			<div class="modal-content">
+				<section class="panel panel-primary">
+					<?php echo form_open('penjualan/editpenjualan', ' id="FormulirEdit" enctype="multipart/form-data"'); ?>
+					<input type="hidden" name="idd" id="idd">
+					<header class="panel-heading">
+						<h2 class="panel-title">Edit PO</h2>
+					</header>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group mt-lg id">
+									<label class="col-sm-3 control-label">Nomor PO<span class="required">*</span></label>
+									<div class="col-sm-9">
+										<input type="text" id="id" class="form-control" readonly />
+										<input type="hidden" name="id" id="id" class="form-control" required />
+									</div>
+								</div>
+								<div class="form-group mt-lg tanggal">
+									<label class="col-sm-3 control-label">Tanggal PO<span class="required">*</span></label>
+									<div class="col-sm-9">
+										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" data-plugin-datepicker required />
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row" style="overflow-x: auto;white-space: nowrap;">
+							<div class="col-md-12">
+								<h3>Rincian Item Yang Dibeli</h3>
+								<div class="table-responsive" style="max-height:420px;">
+									<table class="table table-bordered table-hover table-striped dataTable no-footer listitemedit">
+										<thead>
+											<tr>
+												<th style="min-width:200px;">Kode Item</th>
+												<th style="min-width:400px;">Nama Item</th>
+												<th style="min-width:150px;">Harga</th>
+												<th style="min-width:100px;">Kuantiti</th>
+												<th style="min-width:100px;">Total</th>
+												<th style="min-width:150px;" colspan="2">Diskon %</th>
+											</tr>
+										</thead>
+										<tbody>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<footer class="panel-footer">
+						<div class="row">
+							<div class="col-md-12 text-right">
+								<button class="btn btn-primary modal-confirm" type="submit" id="submitformEdit">Submit</button>
+								<button class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</footer>
+					</form>
+				</section>
+			</div>
+		</div>
+	</div>
 
 	<div class="modal fade" id="tambahData" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
@@ -737,7 +800,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.init.js"></script>
 	<script>
 		$(document).ready(function() {
-			$('#data').DataTable({
+			$('#jualdata').DataTable({
 				"ajax": {
 					"url": "<?php echo base_url('penjualan/listpenjualan'); ?>",
 					"type": "GET",
@@ -746,7 +809,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 				"columns": [{
 						"data": null,
 						"render": function(data, type, row, meta) {
-							return '<button class="btn btn-info btn-sm" onclick="editPenjualan(' + row.id + ')">Edit</button>';
+							return '<button class="btn btn-info btn-sm" onclick="edit(' + row.id + ')">Edit</button>';
 						}
 					},
 					{
@@ -762,39 +825,137 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			});
 		});
 
-		function editPenjualan(idd) {
+		function edit(id) {
+			$(".listitemedit").find("tr:not(:first)").remove();
+			$('#editData').modal();
 			$.ajax({
-				url: '<?php echo base_url('penjualan/edit_penjualan') ?>/' + idd,
 				type: 'GET',
+				url: '<?php echo base_url() ?>penjualan/editpenjualan',
+				data: {
+					id: id
+				},
 				dataType: 'json',
 				success: function(response) {
-					var items = response.items;
-					var html = '<table class="table">';
-					html += '<thead><tr><th>Kode Item</th><th>Nama Item</th><th>Kuantiti</th><th>Harga</th><th>Total</th></tr></thead>';
-					html += '<tbody>';
-					for (var i = 0; i < items.length; i++) {
-						var total = items[i].kuantiti * items[i].harga;
-						html += '<tr>';
-						html += '<td>' + items[i].kode_item + '</td>';
-						html += '<td>' + items[i].nama_item + '</td>';
-						html += '<td><input type="number" class="form-control" id="kuantiti_' + items[i].id + '" value="' + items[i].kuantiti + '"></td>';
-						html += '<td>' + items[i].harga + '</td>';
-						html += '<td>' + total + '</td>';
-						html += '</tr>';
-					}
-					html += '</tbody>';
-					html += '</table>';
+					$('#id').val(response.datarows[0].id);
+					$('#total').val(response.datarows[0].total);
+					$('#tanggal').val(response.datarows[0].tanggal);
 
-					// Tampilkan data dalam modal
-					$('#modal_body').html(html);
-					$('#modal_edit').modal('show'); // Memastikan modal muncul
-				},
-				error: function(xhr, status, error) {
-					console.error(xhr.responseText);
-					alert('Terjadi kesalahan saat memuat data penjualan.');
+					$.each(response.datasub, function(i, itemsub) {
+						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
+						var datarow = '<tr>';
+						datarow += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + i + '" data-toggle="modal" data-target="#modal-listitems" value="' + itemsub.kode_item + '" class="form-control kode-item' + i + '" placeholder="Pilih Item"><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
+						datarow += '<td><input type="hidden" class="nama-item' + i + '" value="' + itemsub.nama_item + '" name="nama_item[]"></td>';
+						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control nama-item' + i + '"></td>';
+						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="harga[]" class="form-control mask_priceedit" required></td>';
+						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="kuantiti[]" class="form-control"></td>';
+						datarow += '<td><input type="number" value="' + itemsub.total + '" name="total[]" size="3" class="form-control"></td>';
+						datarow += '</tr>';
+						$('.listitemedit tbody').append(datarow);
+					});
 				}
 			});
+			return false;
 		}
+
+		var max_fieldsEdit = 1000;
+		var wrapperItemEdit = $(".listitemedit");
+		var add_button_mgEdit = $("#tambahItemedit");
+		var x = 0;
+
+		// Menambahkan fungsi untuk menangani klik tombol tambah item
+		$(add_button_mgEdit).click(function(e) {
+			e.preventDefault();
+			if (x < max_fieldsEdit) {
+				x = x + 1;
+				var formtambah = '<tr>';
+				formtambah += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + x + '" data-toggle="modal" data-target="#modal-listitems"  class="form-control kode-item' + x + '" placeholder="Pilih Item"><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
+				formtambah += '<td><input type="hidden" class="nama-item' + x + '" name="nama_item[]">';
+				formtambah += '<td><input type="text"  class="form-control nama-item' + x + '"></td>';
+				formtambah += '<td><input type="text" name="harga[]" class="form-control mask_price' + x + '" required></td>';
+				formtambah += '<td><input type="number" name="kuantiti[]" class="form-control"></td>';
+				formtambah += '<td><input type="number" name="total[]" size="3" class="form-control"></td>';
+				formtambah += '</tr>';
+				$(wrapperItemEdit).append(formtambah);
+				$('.tgl_expired').datepicker({
+					format: 'yyyy-mm-dd'
+				});
+				$('.mask_price' + x).maskMoney();
+			} else {
+				document.getElementById("tambahItemedit").setAttribute('disabled', 'disabled');
+				alert('Maksimal ' + max_fields + ' form')
+			}
+		});
+		$(wrapperItemEdit).on("click", ".deleterowedit", function(e) {
+			e.preventDefault();
+			$(this).parent().parent().remove();
+			document.getElementById("tambahItemedit").removeAttribute('disabled');
+		});
+		document.getElementById("FormulirEdit").addEventListener("submit", function(e) {
+			blurForm();
+			$('.help-block').hide();
+			$('.form-group').removeClass('has-error');
+			document.getElementById("submitformEdit").setAttribute('disabled', 'disabled');
+			$('#submitformEdit').html('Loading ...');
+			var form = $('#FormulirEdit')[0];
+			var formData = new FormData(form);
+			var xhrAjax = $.ajax({
+				type: 'POST',
+				url: $(this).attr('action'),
+				data: formData,
+				processData: false,
+				contentType: false,
+				cache: false,
+				dataType: 'json'
+			}).done(function(data) {
+				if (!data.success) {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
+					document.getElementById("submitformEdit").removeAttribute('disabled');
+					$('#submitformEdit').html('Submit');
+					var objek = Object.keys(data.errors);
+					for (var key in data.errors) {
+						if (data.errors.hasOwnProperty(key)) {
+							var msg = '<div class="help-block" for="' + key + '">' + data.errors[key] + '</span>';
+							$('.' + key).addClass('has-error');
+							$('input[name="' + key + '"]').after(msg);
+						}
+						if (key == 'jumlah_obat') {
+							alert(data.errors[key]);
+						}
+						if (key == 'fail') {
+							new PNotify({
+								title: 'Notifikasi',
+								text: data.errors[key],
+								type: 'danger'
+							});
+						}
+					}
+				} else {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
+					PNotify.removeAll();
+					$('#jualdata').dataTable().api().ajax.reload();
+					laporan_ringkas();
+					document.getElementById("submitformEdit").removeAttribute('disabled');
+					$('#editData').modal('hide');
+					document.getElementById("FormulirEdit").reset();
+					$('#submitformEdit').html('Submit');
+					new PNotify({
+						title: 'Notifikasi',
+						text: data.message,
+						type: 'success'
+					});
+				}
+			}).fail(function(data) {
+				new PNotify({
+					title: 'Notifikasi',
+					text: "Request gagal, browser akan direload",
+					type: 'danger'
+				});
+				window.setTimeout(function() {
+					location.reload();
+				}, 2000);
+			});
+			e.preventDefault();
+		});
 
 		function paymentsubmit(total, dibayar) {
 			if (total <= dibayar) {
