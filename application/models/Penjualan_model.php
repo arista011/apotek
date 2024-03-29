@@ -676,6 +676,7 @@ class Penjualan_model extends CI_Model
 
         $this->db->select('id, total, tanggal');
         $this->db->from('penjualan');
+        $this->db->order_by('tanggal', 'desc');
 
         $query = $this->db->get();
         return $query->result();
@@ -693,21 +694,23 @@ class Penjualan_model extends CI_Model
         return $query->result();
     }
 
-    public function update_penjualan()
+    public function update_penjualan($data)
     {
-        $post = $this->input->post();
-        $this->tanggal_retur = $post["tanggal_retur"];
-        $this->retur = $post["retur"];
-        $this->db->update("penjualan", $this, array('nomor_retur' => $post['idd']));
-        $kuantiti = bilanganbulat($this->input->post("kuantiti"));
-        $id_item = $this->input->post("id_item");
-        for ($i = 0; $i < count($id_item); $i++) {
-            $listitem = array(
-                'kuantiti' => $kuantiti[$i],
-            );
-            $this->db->where('idd', $id_item[$i]);
-            $this->db->update("retur_detail", $listitem);
+        foreach ($data["details"] as $detail) {
+            $id_penjualan = $detail["id_penjualan"];
+            $kode_item = $detail["kode_item"];
+            $harga = $detail["harga"];
+            $kuantiti = $detail["kuantiti"];
+            $total = $detail["total"];
+
+            // Perbarui data penjualan_detail sesuai dengan id_penjualan dan kode_item
+            $this->db->where('id_penjualan', $id_penjualan);
+            $this->db->where('kode_item', $kode_item);
+            $this->db->update('penjualan_detail', array(
+                'harga' => $harga,
+                'kuantiti' => $kuantiti,
+                'total' => $total
+            ));
         }
-        return TRUE;
     }
 }

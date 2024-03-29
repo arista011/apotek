@@ -267,8 +267,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 		</div>
 	</section>
 
-	<div class="modal fade bd-example-modal-lg" id="editData" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg" style="width:90%">
+	<div class="modal fade bd-example-modal-lg" id="editData" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
 			<div class="modal-content">
 				<section class="panel panel-primary">
 					<?php echo form_open('penjualan/editpenjualan', ' id="FormulirEdit" enctype="multipart/form-data"'); ?>
@@ -280,14 +280,14 @@ defined('BASEPATH') or exit('No direct script access allowed');
 						<div class="row">
 							<div class="col-md-6">
 								<div class="form-group mt-lg id">
-									<label class="col-sm-3 control-label">Nomor PO<span class="required">*</span></label>
+									<label class="col-sm-3 control-label">Invoice<span class="required">*</span></label>
 									<div class="col-sm-9">
 										<input type="text" id="id" class="form-control" readonly />
 										<input type="hidden" name="id" id="id" class="form-control" required />
 									</div>
 								</div>
 								<div class="form-group mt-lg tanggal">
-									<label class="col-sm-3 control-label">Tanggal PO<span class="required">*</span></label>
+									<label class="col-sm-3 control-label">Tanggal<span class="required">*</span></label>
 									<div class="col-sm-9">
 										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" data-plugin-datepicker required />
 									</div>
@@ -297,16 +297,15 @@ defined('BASEPATH') or exit('No direct script access allowed');
 						<div class="row" style="overflow-x: auto;white-space: nowrap;">
 							<div class="col-md-12">
 								<h3>Rincian Item Yang Dibeli</h3>
-								<div class="table-responsive" style="max-height:420px;">
+								<div class="table-responsive" style="max-height:280px;">
 									<table class="table table-bordered table-hover table-striped dataTable no-footer listitemedit">
 										<thead>
 											<tr>
-												<th style="min-width:200px;">Kode Item</th>
-												<th style="min-width:400px;">Nama Item</th>
-												<th style="min-width:150px;">Harga</th>
-												<th style="min-width:100px;">Kuantiti</th>
-												<th style="min-width:100px;">Total</th>
-												<th style="min-width:150px;" colspan="2">Diskon %</th>
+												<th style="min-width:100px;">Kode Item</th>
+												<th style="min-width:120px;">Nama Item</th>
+												<th style="min-width:80px;">Harga</th>
+												<th style="min-width:40px;">Kuantiti</th>
+												<th style="min-width:80px;">Total</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -823,6 +822,17 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					}
 				]
 			});
+
+			var wrapperItemEdit = $(".listitemedit");
+
+			// Menambahkan fungsi untuk menangani perubahan kuantitas
+			$(wrapperItemEdit).on("change", ".kuantiti", function(e) {
+				var urutan = $(this).data('urutan');
+				var harga = $(this).parent().prev().find('.mask_priceedit').val().replace(/\D/g, '');
+				var kuantiti = $(this).val();
+				var total = harga * kuantiti;
+				$(this).parent().next().find('.total').val(total);
+			});
 		});
 
 		function edit(id) {
@@ -843,12 +853,11 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					$.each(response.datasub, function(i, itemsub) {
 						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
 						var datarow = '<tr>';
-						datarow += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + i + '" data-toggle="modal" data-target="#modal-listitems" value="' + itemsub.kode_item + '" class="form-control kode-item' + i + '" placeholder="Pilih Item" disabled><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
-						datarow += '<td><input type="hidden" class="kode-item' + i + '" value="' + itemsub.kode_item + '" name="kode_item[]"><input type="hidden" class="nama-item' + i + '" value="' + itemsub.nama_item + '" name="nama_item[]"></td>';
-						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control nama-item' + i + '" disabled></td>';
-						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="harga[]" class="form-control mask_priceedit" required disabled></td>';
-						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="kuantiti[]" class="form-control kuantiti" data-urutan="' + i + '"></td>';
-						datarow += '<td><input type="number" value="' + total + '" name="total[]" size="3" class="form-control total" disabled></td>';
+						datarow += '<td><input type="text" value="' + itemsub.kode_item + '" class="form-control kode-item' + i + '" name="details[' + i + '][kode_item]" disabled></td>';
+						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control nama-item' + i + '" name="details[' + i + '][nama_item]" disabled></td>';
+						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="details[' + i + '][harga]" class="form-control mask_priceedit" required disabled></td>';
+						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="details[' + i + '][kuantiti]" class="form-control kuantiti" data-urutan="' + i + '"></td>';
+						datarow += '<td><input type="number" value="' + total + '" name="details[' + i + '][total]" size="3" class="form-control total" disabled></td>';
 						datarow += '</tr>';
 						$('.listitemedit tbody').append(datarow);
 					});
@@ -856,18 +865,54 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			});
 			return false;
 		}
+		$(document).ready(function() {
+			// Menangani klik tombol submit form edit menggunakan AJAX
+			$("#submitformEdit").click(function(event) {
+				 
+				var formData = {
+					id_penjualan: $("#id").val(),
+					details: [],
+					csrf_token: "<?php echo $this->security->get_csrf_hash(); ?>" // Tambahkan token CSRF ke dalam data
+				};
 
-		var wrapperItemEdit = $(".listitemedit");
-		var x = 0;
+				// Mengambil data detail penjualan dari input dengan class 'listitemedit'
+				$(".listitemedit tbody tr").each(function(index) {
+					var kode_item = $(this).find("td:eq(0) input").val(); // Kode item dari input pertama di baris
+					var harga = $(this).find("td:eq(2) input").val(); // Harga dari input ketiga di baris
+					var kuantiti = $(this).find("td:eq(3) input").val(); // Kuantiti dari input keempat di baris
+					var total = $(this).find("td:eq(4) input").val(); // Total dari input kelima di baris
 
-		// Menambahkan fungsi untuk menangani perubahan kuantitas
-		$(wrapperItemEdit).on("change", ".kuantiti", function(e) {
-			var urutan = $(this).data('urutan');
-			var harga = $(this).parent().prev().find('.mask_priceedit').val().replace(/\D/g, '');
-			var kuantiti = $(this).val();
-			var total = harga * kuantiti;
-			$(this).parent().next().find('.kuantiti').val(kuantiti);
-			$(this).parent().next().find('.total').val(total);
+					// Tambahkan detail penjualan ke dalam array
+					formData.details.push({
+						kode_item: kode_item,
+						harga: harga,
+						kuantiti: kuantiti,
+						total: total
+					});
+				});
+
+				// Mengirim data menggunakan AJAX
+				$.ajax({
+					type: 'POST',
+					url: '<?php echo base_url("updatepenjualan"); ?>',
+					dataType: 'json',
+					success: function(response) {
+						// Menampilkan pesan berhasil atau gagal
+						if (response.success) {
+							alert("Berhasil menyimpan data");
+							// Lakukan aksi lain jika berhasil disimpan
+						} else {
+							alert("Gagal menyimpan data: " + response.message);
+							// Lakukan aksi lain jika gagal disimpan
+						}
+					},
+					error: function(xhr, status, error) {
+						console.error(xhr.responseText); // Cetak respons dari server
+						alert("Terjadi kesalahan saat menyimpan data: " + error);
+					}
+				});
+			});
+			event.preventDefault();
 		});
 
 		function paymentsubmit(total, dibayar) {

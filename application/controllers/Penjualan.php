@@ -582,7 +582,7 @@ class Penjualan extends CI_Controller
 
     public function editpenjualan()
     {
-        $this->cekajax();
+        cekajax();
         header('Content-Type: application/json');
         $idd = $this->input->get("id");
         $result = $this->penjualan_model->_list_penjualan($idd);
@@ -616,10 +616,31 @@ class Penjualan extends CI_Controller
 
     public function updatepenjualan()
     {
-        $this->cekajax();
-        header('Content-Type: application/json');
-        $id = $this->input->post("id");
-        $kuantiti = $this->input->post("kuantiti");
-        // Lakukan operasi pembaruan (update) data penjualan di sini menggunakan model
+        cekajax(); 
+        $simpan = $this->penjualan_model;
+		$validation = $this->form_validation; 
+        $validation->set_rules($simpan->rulespo());
+		if ($this->form_validation->run() == FALSE){
+			$errors = $this->form_validation->error_array();
+			$data['errors'] = $errors;
+        }else{            
+            $kode_item = $this->input->post("kode_item");   
+            if(isset($kode_item) === TRUE AND $kode_item[0]!='')
+            { 		
+				if($simpan->updatedatapo()){ 
+					$data['success']= true;
+					$data['message']="Berhasil menyimpan data";  
+				}else{
+					$errors['fail'] = "gagal melakukan update data";
+					$data['errors'] = $errors;
+				}   
+            }
+            else{ 
+                $errors['jumlah_obat'] = "Mohon pilih item";
+                $data['errors'] = $errors;
+            }
+        }
+        $data['token'] = $this->security->get_csrf_hash();
+        echo json_encode($data); 
     }
 }
