@@ -843,12 +843,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					$.each(response.datasub, function(i, itemsub) {
 						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
 						var datarow = '<tr>';
-						datarow += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + i + '" data-toggle="modal" data-target="#modal-listitems" value="' + itemsub.kode_item + '" class="form-control kode-item' + i + '" placeholder="Pilih Item"><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
-						datarow += '<td><input type="hidden" class="nama-item' + i + '" value="' + itemsub.nama_item + '" name="nama_item[]"></td>';
-						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control nama-item' + i + '"></td>';
-						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="harga[]" class="form-control mask_priceedit" required></td>';
-						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="kuantiti[]" class="form-control"></td>';
-						datarow += '<td><input type="number" value="' + itemsub.total + '" name="total[]" size="3" class="form-control"></td>';
+						datarow += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + i + '" data-toggle="modal" data-target="#modal-listitems" value="' + itemsub.kode_item + '" class="form-control kode-item' + i + '" placeholder="Pilih Item" disabled><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
+						datarow += '<td><input type="hidden" class="kode-item' + i + '" value="' + itemsub.kode_item + '" name="kode_item[]"><input type="hidden" class="nama-item' + i + '" value="' + itemsub.nama_item + '" name="nama_item[]"></td>';
+						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control nama-item' + i + '" disabled></td>';
+						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="harga[]" class="form-control mask_priceedit" required disabled></td>';
+						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="kuantiti[]" class="form-control kuantiti" data-urutan="' + i + '"></td>';
+						datarow += '<td><input type="number" value="' + total + '" name="total[]" size="3" class="form-control total" disabled></td>';
 						datarow += '</tr>';
 						$('.listitemedit tbody').append(datarow);
 					});
@@ -857,104 +857,17 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			return false;
 		}
 
-		var max_fieldsEdit = 1000;
 		var wrapperItemEdit = $(".listitemedit");
-		var add_button_mgEdit = $("#tambahItemedit");
 		var x = 0;
 
-		// Menambahkan fungsi untuk menangani klik tombol tambah item
-		$(add_button_mgEdit).click(function(e) {
-			e.preventDefault();
-			if (x < max_fieldsEdit) {
-				x = x + 1;
-				var formtambah = '<tr>';
-				formtambah += '<td><div class="input-group input-group-icon" style="width:150px;"><input type="text" data-urutan="' + x + '" data-toggle="modal" data-target="#modal-listitems"  class="form-control kode-item' + x + '" placeholder="Pilih Item"><span class="input-group-addon"><span class="icon"><i class="fa fa-search"></i></span></span></div></td>';
-				formtambah += '<td><input type="hidden" class="nama-item' + x + '" name="nama_item[]">';
-				formtambah += '<td><input type="text"  class="form-control nama-item' + x + '"></td>';
-				formtambah += '<td><input type="text" name="harga[]" class="form-control mask_price' + x + '" required></td>';
-				formtambah += '<td><input type="number" name="kuantiti[]" class="form-control"></td>';
-				formtambah += '<td><input type="number" name="total[]" size="3" class="form-control"></td>';
-				formtambah += '</tr>';
-				$(wrapperItemEdit).append(formtambah);
-				$('.tgl_expired').datepicker({
-					format: 'yyyy-mm-dd'
-				});
-				$('.mask_price' + x).maskMoney();
-			} else {
-				document.getElementById("tambahItemedit").setAttribute('disabled', 'disabled');
-				alert('Maksimal ' + max_fields + ' form')
-			}
-		});
-		$(wrapperItemEdit).on("click", ".deleterowedit", function(e) {
-			e.preventDefault();
-			$(this).parent().parent().remove();
-			document.getElementById("tambahItemedit").removeAttribute('disabled');
-		});
-		document.getElementById("FormulirEdit").addEventListener("submit", function(e) {
-			blurForm();
-			$('.help-block').hide();
-			$('.form-group').removeClass('has-error');
-			document.getElementById("submitformEdit").setAttribute('disabled', 'disabled');
-			$('#submitformEdit').html('Loading ...');
-			var form = $('#FormulirEdit')[0];
-			var formData = new FormData(form);
-			var xhrAjax = $.ajax({
-				type: 'POST',
-				url: $(this).attr('action'),
-				data: formData,
-				processData: false,
-				contentType: false,
-				cache: false,
-				dataType: 'json'
-			}).done(function(data) {
-				if (!data.success) {
-					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
-					document.getElementById("submitformEdit").removeAttribute('disabled');
-					$('#submitformEdit').html('Submit');
-					var objek = Object.keys(data.errors);
-					for (var key in data.errors) {
-						if (data.errors.hasOwnProperty(key)) {
-							var msg = '<div class="help-block" for="' + key + '">' + data.errors[key] + '</span>';
-							$('.' + key).addClass('has-error');
-							$('input[name="' + key + '"]').after(msg);
-						}
-						if (key == 'jumlah_obat') {
-							alert(data.errors[key]);
-						}
-						if (key == 'fail') {
-							new PNotify({
-								title: 'Notifikasi',
-								text: data.errors[key],
-								type: 'danger'
-							});
-						}
-					}
-				} else {
-					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
-					PNotify.removeAll();
-					$('#jualdata').dataTable().api().ajax.reload();
-					laporan_ringkas();
-					document.getElementById("submitformEdit").removeAttribute('disabled');
-					$('#editData').modal('hide');
-					document.getElementById("FormulirEdit").reset();
-					$('#submitformEdit').html('Submit');
-					new PNotify({
-						title: 'Notifikasi',
-						text: data.message,
-						type: 'success'
-					});
-				}
-			}).fail(function(data) {
-				new PNotify({
-					title: 'Notifikasi',
-					text: "Request gagal, browser akan direload",
-					type: 'danger'
-				});
-				window.setTimeout(function() {
-					location.reload();
-				}, 2000);
-			});
-			e.preventDefault();
+		// Menambahkan fungsi untuk menangani perubahan kuantitas
+		$(wrapperItemEdit).on("change", ".kuantiti", function(e) {
+			var urutan = $(this).data('urutan');
+			var harga = $(this).parent().prev().find('.mask_priceedit').val().replace(/\D/g, '');
+			var kuantiti = $(this).val();
+			var total = harga * kuantiti;
+			$(this).parent().next().find('.kuantiti').val(kuantiti);
+			$(this).parent().next().find('.total').val(total);
 		});
 
 		function paymentsubmit(total, dibayar) {

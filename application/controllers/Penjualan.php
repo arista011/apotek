@@ -582,7 +582,7 @@ class Penjualan extends CI_Controller
 
     public function editpenjualan()
     {
-        cekajax();
+        $this->cekajax();
         header('Content-Type: application/json');
         $idd = $this->input->get("id");
         $result = $this->penjualan_model->_list_penjualan($idd);
@@ -616,9 +616,10 @@ class Penjualan extends CI_Controller
 
     public function updatepenjualan()
     {
-        cekajax();
+        $this->cekajax();
         header('Content-Type: application/json');
         $id = $this->input->post("id");
         $kuantiti = $this->input->post("kuantiti");
+        // Lakukan operasi pembaruan (update) data penjualan di sini menggunakan model
     }
 }

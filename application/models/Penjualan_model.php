@@ -692,4 +692,22 @@ class Penjualan_model extends CI_Model
         $query = $this->db->get();
         return $query->result();
     }
+
+    public function update_penjualan()
+    {
+        $post = $this->input->post();
+        $this->tanggal_retur = $post["tanggal_retur"];
+        $this->keterangan = $post["keterangan"];
+        $this->db->update("retur_pembelian", $this, array('nomor_retur' => $post['idd']));
+        $kuantiti = bilanganbulat($this->input->post("kuantiti"));
+        $id_item = $this->input->post("id_item");
+        for ($i = 0; $i < count($id_item); $i++) {
+            $listitem = array(
+                'kuantiti' => $kuantiti[$i],
+            );
+            $this->db->where('idd', $id_item[$i]);
+            $this->db->update("retur_detail", $listitem);
+        }
+        return TRUE;
+    }
 }
