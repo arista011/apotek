@@ -800,6 +800,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script>
 		$(document).ready(function() {
 			$('#jualdata').DataTable({
+				"serverSide": true,
 				"ajax": {
 					"url": "<?php echo base_url('penjualan/listpenjualan'); ?>",
 					"type": "GET",
@@ -828,8 +829,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			// Menambahkan fungsi untuk menangani perubahan kuantitas
 			$(wrapperItemEdit).on("change", ".kuantiti", function(e) {
 				var urutan = $(this).data('urutan');
-				var harga = $(this).parent().prev().find('.mask_priceedit').val().replace(/\D/g, '');
-				var kuantiti = $(this).val();
+				var harga = parseInt($(this).parent().prev().find('.mask_priceedit').val().replace(/\D/g, ''));
+				var kuantiti = parseInt($(this).val());
 				var total = harga * kuantiti;
 				$(this).parent().next().find('.total').val(total);
 			});
@@ -865,54 +866,71 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			});
 			return false;
 		}
+
 		$(document).ready(function() {
-			// Menangani klik tombol submit form edit menggunakan AJAX
-			$("#submitformEdit").click(function(event) {
-				 
-				var formData = {
-					id_penjualan: $("#id").val(),
-					details: [],
-					csrf_token: "<?php echo $this->security->get_csrf_hash(); ?>" // Tambahkan token CSRF ke dalam data
-				};
-
-				// Mengambil data detail penjualan dari input dengan class 'listitemedit'
-				$(".listitemedit tbody tr").each(function(index) {
-					var kode_item = $(this).find("td:eq(0) input").val(); // Kode item dari input pertama di baris
-					var harga = $(this).find("td:eq(2) input").val(); // Harga dari input ketiga di baris
-					var kuantiti = $(this).find("td:eq(3) input").val(); // Kuantiti dari input keempat di baris
-					var total = $(this).find("td:eq(4) input").val(); // Total dari input kelima di baris
-
-					// Tambahkan detail penjualan ke dalam array
-					formData.details.push({
-						kode_item: kode_item,
-						harga: harga,
-						kuantiti: kuantiti,
-						total: total
-					});
-				});
-
-				// Mengirim data menggunakan AJAX
+			// Menangani submit form edit menggunakan AJAX
+			$("#FormulirEdit").submit(function(e) {
+				blurForm();
+				$('.help-block').hide();
+				$('.form-group').removeClass('has-error');
+				$('#submitformEdit').prop('disabled', true).html('Loading ...');
+				var form = $(this)[0];
+				var formData = new FormData(form);
 				$.ajax({
 					type: 'POST',
-					url: '<?php echo base_url("updatepenjualan"); ?>',
+					url: '<?php echo base_url() ?>penjualan/updatepenjualan',
+					data: formData,
+					processData: false,
+					contentType: false,
+					cache: false,
 					dataType: 'json',
-					success: function(response) {
-						// Menampilkan pesan berhasil atau gagal
-						if (response.success) {
-							alert("Berhasil menyimpan data");
-							// Lakukan aksi lain jika berhasil disimpan
+					success: function(data) {
+						if (!data.success) {
+							$('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val(data.token);
+							$('#submitformEdit').prop('disabled', false).html('Submit');
+							$.each(data.errors, function(key, value) {
+								var msg = '<div class="help-block" for="' + key + '">' + value + '</div>';
+								$('.' + key).addClass('has-error');
+								$('input[name="' + key + '"]').after(msg);
+								if (key === 'id_penjualan') {
+									alert(value);
+								}
+								if (key === 'fail') {
+									new PNotify({
+										title: 'Notifikasi',
+										text: value,
+										type: 'danger'
+									});
+								}
+							});
 						} else {
-							alert("Gagal menyimpan data: " + response.message);
-							// Lakukan aksi lain jika gagal disimpan
+							$('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val(data.token);
+							PNotify.removeAll();
+							$('#jualdata').DataTable().ajax.reload();
+							laporan_ringkas();
+							$('#editData').modal('hide');
+							$('#FormulirEdit')[0].reset();
+							$('#submitformEdit').prop('disabled', false).html('Submit');
+							new PNotify({
+								title: 'Notifikasi',
+								text: data.message,
+								type: 'success'
+							});
 						}
 					},
 					error: function(xhr, status, error) {
-						console.error(xhr.responseText); // Cetak respons dari server
-						alert("Terjadi kesalahan saat menyimpan data: " + error);
+						new PNotify({
+							title: 'Notifikasi',
+							text: "Request gagal, browser akan direload",
+							type: 'danger'
+						});
+						window.setTimeout(function() {
+							location.reload();
+						}, 2000);
 					}
 				});
+				e.preventDefault();
 			});
-			event.preventDefault();
 		});
 
 		function paymentsubmit(total, dibayar) {

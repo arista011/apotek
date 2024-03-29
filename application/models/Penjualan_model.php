@@ -707,6 +707,7 @@ class Penjualan_model extends CI_Model
             $this->db->where('id_penjualan', $id_penjualan);
             $this->db->where('kode_item', $kode_item);
             $this->db->update('penjualan_detail', array(
+                'kode_item'=>$kode_item,
                 'harga' => $harga,
                 'kuantiti' => $kuantiti,
                 'total' => $total

@@ -616,31 +616,31 @@ class Penjualan extends CI_Controller
 
     public function updatepenjualan()
     {
-        cekajax(); 
-        $simpan = $this->penjualan_model;
-		$validation = $this->form_validation; 
-        $validation->set_rules($simpan->rulespo());
-		if ($this->form_validation->run() == FALSE){
-			$errors = $this->form_validation->error_array();
-			$data['errors'] = $errors;
-        }else{            
-            $kode_item = $this->input->post("kode_item");   
-            if(isset($kode_item) === TRUE AND $kode_item[0]!='')
-            { 		
-				if($simpan->updatedatapo()){ 
-					$data['success']= true;
-					$data['message']="Berhasil menyimpan data";  
-				}else{
-					$errors['fail'] = "gagal melakukan update data";
-					$data['errors'] = $errors;
-				}   
-            }
-            else{ 
-                $errors['jumlah_obat'] = "Mohon pilih item";
-                $data['errors'] = $errors;
-            }
+        // Pastikan bahwa request ini merupakan request AJAX
+        cekajax();
+
+        // Load model yang diperlukan
+        $this->load->model('penjualan_model');
+
+        // Inisialisasi array untuk data response
+        $data = array();
+
+        // Panggil method update_penjualan dari model dengan parameter $this->input->post()
+        if ($this->penjualan_model->update_penjualan($this->input->post())) {
+            // Jika proses update berhasil
+            $data['success'] = true;
+            $data['message'] = "Berhasil menyimpan data";
+        } else {
+            // Jika proses update gagal
+            $errors['fail'] = "Gagal melakukan update data";
+            $data['errors'] = $errors;
+            $data['success'] = false; // Set nilai 'success' menjadi false
         }
+
+        // Generate token CSRF dan kirimkan bersama dengan response
         $data['token'] = $this->security->get_csrf_hash();
-        echo json_encode($data); 
+
+        // Encode data menjadi JSON dan kirimkan sebagai response
+        echo json_encode($data);
     }
 }
