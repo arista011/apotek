@@ -576,16 +576,19 @@ class Penjualan extends CI_Controller
     {
         cekajax();
         header('Content-Type: application/json');
-        $listjual = $this->penjualan_model->_list_penjualan();
+        $this->load->model('penjualan_model'); // Memuat model penjualan_model
+        $listjual = $this->penjualan_model->list_penjualan();
         echo json_encode($listjual);
     }
 
-    public function editpenjualan()
+    public function editpenjualan($id)
     {
         cekajax();
         header('Content-Type: application/json');
-        $idd = $this->input->get("id");
-        $result = $this->penjualan_model->_list_penjualan($idd);
+        $this->load->model('penjualan_model'); // Memuat model penjualan_model
+
+        // Mengambil data penjualan
+        $result = $this->penjualan_model->list_penjualan($id);
         $resultArray = array();
         foreach ($result as $data) {
             $resultArray[] = array(
@@ -594,53 +597,52 @@ class Penjualan extends CI_Controller
                 "tanggal" => $this->security->xss_clean($data->tanggal)
             );
         }
-        $datasub = $this->penjualan_model->edit_penjualan($idd);
+
+        // Mengambil data detail penjualan
+        $datasub = $this->penjualan_model->edit_penjualan($id);
         $datasubArray = array();
         foreach ($datasub as $r) {
-            $total = $r->kuantiti * $r->harga;
             $subArray = array(
+                "id_penjualan" => $this->security->xss_clean($r->id_penjualan),
                 "kode_item" => $this->security->xss_clean($r->kode_item),
                 "nama_item" => $this->security->xss_clean($r->nama_item),
                 "kuantiti" => $this->security->xss_clean($r->kuantiti),
                 "harga" => $this->security->xss_clean(rupiah($r->harga)),
-                "total" => $this->security->xss_clean(rupiah($total))
+                "total" => $this->security->xss_clean(rupiah($r->total))
             );
             $datasubArray[] =  $subArray;
         }
+
+        // Menggabungkan data ke dalam satu JSON
         $response = array(
-            'datarows' => $resultArray,
-            'datasub' => $datasubArray
+            "datarows" => $resultArray,
+            "datasub" => $datasubArray
         );
+
         echo json_encode($response);
     }
 
     public function updatepenjualan()
     {
-        // Pastikan bahwa request ini merupakan request AJAX
         cekajax();
-
-        // Load model yang diperlukan
-        $this->load->model('penjualan_model');
-
-        // Inisialisasi array untuk data response
-        $data = array();
-
-        // Panggil method update_penjualan dari model dengan parameter $this->input->post()
-        if ($this->penjualan_model->update_penjualan($this->input->post())) {
-            // Jika proses update berhasil
-            $data['success'] = true;
-            $data['message'] = "Berhasil menyimpan data";
-        } else {
-            // Jika proses update gagal
-            $errors['fail'] = "Gagal melakukan update data";
-            $data['errors'] = $errors;
-            $data['success'] = false; // Set nilai 'success' menjadi false
+        $simpan = $this->penjualan_model;
+        $id_penjualan = $this->input->post('id_penjualan');
+        $kode_item = $this->input->post("kode_item");
+        if (isset($id_penjualan) === TRUE and $id_penjualan[0] != '') {
+            if (isset($kode_item) === TRUE and $kode_item[0] != '') {
+                if ($simpan->update_penjualan()) {
+                    $data['success'] = true;
+                    $data['message'] = "Berhasil menyimpan data";
+                } else {
+                    $errors['fail'] = "gagal melakukan update data";
+                    $data['errors'] = $errors;
+                }
+            } else {
+                $errors['jumlah_obat'] = "Mohon pilih item";
+                $data['errors'] = $errors;
+            }
         }
-
-        // Generate token CSRF dan kirimkan bersama dengan response
         $data['token'] = $this->security->get_csrf_hash();
-
-        // Encode data menjadi JSON dan kirimkan sebagai response
         echo json_encode($data);
     }
 }
