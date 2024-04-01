@@ -616,31 +616,27 @@ class Penjualan extends CI_Controller
 
     public function updatepenjualan()
     {
-        // Pastikan bahwa request ini merupakan request AJAX
         cekajax();
-
-        // Load model yang diperlukan
         $this->load->model('penjualan_model');
 
-        // Inisialisasi array untuk data response
-        $data = array();
+        // Mengambil data dari POST
+        $id_penjualan = $this->input->post('id');
+        $tanggal = $this->input->post('tanggal');
+        $details = $this->input->post('details');
 
-        // Panggil method update_penjualan dari model dengan parameter $this->input->post()
-        if ($this->penjualan_model->update_penjualan($this->input->post())) {
-            // Jika proses update berhasil
-            $data['success'] = true;
-            $data['message'] = "Berhasil menyimpan data";
+        // Memanggil model untuk melakukan pembaruan
+        $success = $this->penjualan_model->update_penjualan($id_penjualan, $tanggal, $details);
+
+        // Menyiapkan respons JSON
+        $response = array();
+        if ($success) {
+            $response['success'] = true;
+            $response['message'] = "Berhasil menyimpan data";
         } else {
-            // Jika proses update gagal
-            $errors['fail'] = "Gagal melakukan update data";
-            $data['errors'] = $errors;
-            $data['success'] = false; // Set nilai 'success' menjadi false
+            $response['success'] = false;
+            $response['message'] = "Gagal menyimpan data";
         }
-
-        // Generate token CSRF dan kirimkan bersama dengan response
-        $data['token'] = $this->security->get_csrf_hash();
-
-        // Encode data menjadi JSON dan kirimkan sebagai response
-        echo json_encode($data);
+        $response['token'] = $this->security->get_csrf_hash();
+        echo json_encode($response);
     }
 }
