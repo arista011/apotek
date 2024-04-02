@@ -272,7 +272,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			<div class="modal-content">
 				<section class="panel panel-primary">
 					<?php echo form_open('penjualan/editpenjualan', ' id="FormulirEdit" enctype="multipart/form-data"'); ?>
-					<input type="hidden" name="idd" id="idd">
 					<header class="panel-heading">
 						<h2 class="panel-title">Edit PO</h2>
 					</header>
@@ -282,14 +281,13 @@ defined('BASEPATH') or exit('No direct script access allowed');
 								<div class="form-group mt-lg id">
 									<label class="col-sm-3 control-label">Invoice<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" id="id" class="form-control" readonly />
-										<input type="hidden" name="id" id="id" class="form-control" required />
+										<input type="text" name="id" id="id" class="form-control id" readonly />
 									</div>
 								</div>
 								<div class="form-group mt-lg tanggal">
 									<label class="col-sm-3 control-label">Tanggal<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" data-plugin-datepicker required />
+										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" readonly />
 									</div>
 								</div>
 							</div>
@@ -301,6 +299,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 									<table class="table table-bordered table-hover table-striped dataTable no-footer listitemedit">
 										<thead>
 											<tr>
+												<th style="min-width:100px;">Invoice</th>
 												<th style="min-width:100px;">Kode Item</th>
 												<th style="min-width:120px;">Nama Item</th>
 												<th style="min-width:80px;">Harga</th>
@@ -830,68 +829,104 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			$('#editData').modal();
 			$.ajax({
 				type: 'GET',
-				url: '<?php echo base_url() ?>penjualan/editpenjualan',
-				data: {
-					id: id
-				},
+				url: '<?php echo base_url() ?>penjualan/editpenjualan/' + id,
 				dataType: 'json',
 				success: function(response) {
 					$('#id').val(response.datarows[0].id);
 					$('#tanggal').val(response.datarows[0].tanggal);
-
+					$('#total').val(response.datarows[0].total);
+					var datarow = '';
 					$.each(response.datasub, function(i, itemsub) {
 						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
-						var datarow = '<tr>';
-						datarow += '<td><input type="text" value="' + itemsub.kode_item + '" class="form-control" name="details[' + i + '][kode_item]" disabled></td>';
-						datarow += '<td><input type="text" value="' + itemsub.nama_item + '" class="form-control" name="details[' + i + '][nama_item]" disabled></td>';
-						datarow += '<td><input type="text" value="' + itemsub.harga + '" name="details[' + i + '][harga]" class="form-control" required disabled></td>';
-						datarow += '<td><input type="number" value="' + itemsub.kuantiti + '" name="details[' + i + '][kuantiti]" class="form-control kuantiti" data-urutan="' + i + '"></td>';
-						datarow += '<td><input type="number" value="' + total + '" name="details[' + i + '][total]" size="3" class="form-control total" disabled></td>';
+						datarow += '<tr><td><input type="text" value="' + itemsub.id_penjualan + '"  name="id_penjualan[]" class="form-control id_penjualan" readonly></td>';
+						datarow += '<td><input type="text" value="' + itemsub.kode_item + '"  name="kode_item[]" class="form-control kode_item" readonly></td>';
+						datarow += '<td><input type="text" value="' + itemsub.nama_item + '"  class="form-control nama_item" readonly></td>';
+						datarow += '<td><input type="text" value="' + itemsub.harga + '"  name="harga[]" class="form-control harga" readonly></td>';
+						datarow += '<td><input type="number"  value="' + itemsub.kuantiti + '"  name="kuantiti[]" class="form-control kuantiti"></td>';
+						datarow += '<td><input type="text"  value="' + total + '"  name="total[]" class="form-control total" readonly></td>';
 						datarow += '</tr>';
-						$('.listitemedit tbody').append(datarow);
 					});
+					$('.listitemedit tbody').append(datarow);
+				},
+				error: function(xhr, status, error) {
+					console.error(xhr.responseText);
 				}
 			});
 			return false;
 		}
+		var wrapperItemEdit = $(".listitemedit");
+		$(wrapperItemEdit).on("change", ".kuantiti", function(e) {
+			var urutan = $(this).data('urutan');
+			var harga = parseInt($(this).parent().prev().find('.harga').val().replace(/\D/g, ''));
+			var kuantiti = parseInt($(this).val());
+			var total = harga * kuantiti;
+			$(this).parent().next().find('.total').val(total);
+		});
 
-		$(document).ready(function() {
-			$("#FormulirEdit").submit(function(e) {
-				e.preventDefault();
-				var formData = $(this).serialize();
-				$.ajax({
-					type: 'POST',
-					url: '<?php echo base_url() ?>penjualan/updatepenjualan',
-					data: formData,
-					dataType: 'json',
-					success: function(response) {
-						if (response.success) {
-							alert(response.message);
-							$('#editData').modal('hide');
-						} else {
-							alert(response.message);
+		document.getElementById("FormulirEdit").addEventListener("submit", function(e) {
+			blurForm();
+			$('.help-block').hide();
+			$('.form-group').removeClass('has-error');
+			document.getElementById("submitformEdit").setAttribute('disabled', 'disabled');
+			$('#submitformEdit').html('Loading ...');
+			var form = $('#FormulirEdit')[0];
+			var formData = new FormData(form);
+			var xhrAjax = $.ajax({
+				type: 'POST',
+				url: $(this).attr('action'),
+				data: formData,
+				processData: false,
+				contentType: false,
+				cache: false,
+				dataType: 'json'
+			}).done(function(data) {
+				if (!data.success) {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
+					document.getElementById("submitformEdit").removeAttribute('disabled');
+					$('#submitformEdit').html('Submit');
+					var objek = Object.keys(data.errors);
+					for (var key in data.errors) {
+						if (data.errors.hasOwnProperty(key)) {
+							var msg = '<div class="help-block" for="' + key + '">' + data.errors[key] + '</span>';
+							$('.' + key).addClass('has-error');
+							$('input[name="' + key + '"]').after(msg);
 						}
-					},
-					error: function(xhr, status, error) {
-						console.error(xhr.responseText);
-						alert('Terjadi kesalahan saat menyimpan data');
-					},
-					complete: function() {
-						$('#submitformEdit').prop('disabled', false).html('Simpan');
+						if (key == 'jumlah_obat') {
+							alert(data.errors[key]);
+						}
+						if (key == 'fail') {
+							new PNotify({
+								title: 'Notifikasi',
+								text: data.errors[key],
+								type: 'danger'
+							});
+						}
 					}
+				} else {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
+					PNotify.removeAll();
+					$('#jualdata').dataTable().api().ajax.reload();
+					document.getElementById("submitformEdit").removeAttribute('disabled');
+					$('#editData').modal('hide');
+					document.getElementById("FormulirEdit").reset();
+					$('#submitformEdit').html('Submit');
+					new PNotify({
+						title: 'Notifikasi',
+						text: data.message,
+						type: 'success'
+					});
+				}
+			}).fail(function(data) {
+				new PNotify({
+					title: 'Notifikasi',
+					text: "Request gagal, browser akan direload",
+					type: 'danger'
 				});
+				window.setTimeout(function() {
+					location.reload();
+				}, 2000);
 			});
-
-			// Menghitung total saat kuantiti berubah
-			$(".listitemedit").on("change", ".kuantiti", function() {
-				var urutan = $(this).data('urutan');
-				var harga = parseInt($(this).parent().prev().find('.form-control').val().replace(/\D/g, ''));
-				var kuantiti = parseInt($(this).val());
-				var total = harga * kuantiti;
-				$(this).parent().next().find('.total').val(total);
-				$(this).parent().next().find('.id').val(id);
-				$(this).parent().next().find('.kode_item').val(kode_item);
-			});
+			e.preventDefault();
 		});
 
 		function paymentsubmit(total, dibayar) {

@@ -576,16 +576,19 @@ class Penjualan extends CI_Controller
     {
         cekajax();
         header('Content-Type: application/json');
-        $listjual = $this->penjualan_model->_list_penjualan();
+        $this->load->model('penjualan_model'); // Memuat model penjualan_model
+        $listjual = $this->penjualan_model->list_penjualan();
         echo json_encode($listjual);
     }
 
-    public function editpenjualan()
+    public function editpenjualan($id)
     {
         cekajax();
         header('Content-Type: application/json');
-        $idd = $this->input->get("id");
-        $result = $this->penjualan_model->_list_penjualan($idd);
+        $this->load->model('penjualan_model'); // Memuat model penjualan_model
+
+        // Mengambil data penjualan
+        $result = $this->penjualan_model->list_penjualan($id);
         $resultArray = array();
         foreach ($result as $data) {
             $resultArray[] = array(
@@ -594,49 +597,51 @@ class Penjualan extends CI_Controller
                 "tanggal" => $this->security->xss_clean($data->tanggal)
             );
         }
-        $datasub = $this->penjualan_model->edit_penjualan($idd);
+
+        // Mengambil data detail penjualan
+        $datasub = $this->penjualan_model->edit_penjualan($id);
         $datasubArray = array();
         foreach ($datasub as $r) {
-            $total = $r->kuantiti * $r->harga;
             $subArray = array(
+                "id_penjualan" => $this->security->xss_clean($r->id_penjualan),
                 "kode_item" => $this->security->xss_clean($r->kode_item),
                 "nama_item" => $this->security->xss_clean($r->nama_item),
                 "kuantiti" => $this->security->xss_clean($r->kuantiti),
                 "harga" => $this->security->xss_clean(rupiah($r->harga)),
-                "total" => $this->security->xss_clean(rupiah($total))
+                "total" => $this->security->xss_clean(rupiah($r->total))
             );
             $datasubArray[] =  $subArray;
         }
+
+        // Menggabungkan data ke dalam satu JSON
         $response = array(
-            'datarows' => $resultArray,
-            'datasub' => $datasubArray
+            "datarows" => $resultArray,
+            "datasub" => $datasubArray
         );
+
         echo json_encode($response);
     }
 
     public function updatepenjualan()
     {
         cekajax();
+        $id = $this->input->post('id_penjualan');
         $this->load->model('penjualan_model');
-
-        // Mengambil data dari POST
-        $id_penjualan = $this->input->post('id');
-        $tanggal = $this->input->post('tanggal');
-        $details = $this->input->post('details');
-
-        // Memanggil model untuk melakukan pembaruan
-        $success = $this->penjualan_model->update_penjualan($id_penjualan, $tanggal, $details);
-
-        // Menyiapkan respons JSON
-        $response = array();
+        $penjualan_exist = $this->penjualan_model->edit_penjualan($id);
+        if (!$penjualan_exist) {
+            $response['success'] = false;
+            $response['message'] = 'ID Penjualan tidak ditemukan.';
+            echo json_encode($response);
+            return;
+        }
+        $success = $this->penjualan_model->update_penjualan($id_penjualan);
         if ($success) {
             $response['success'] = true;
-            $response['message'] = "Berhasil menyimpan data";
+            $response['message'] = 'Data penjualan berhasil diperbarui.';
         } else {
             $response['success'] = false;
-            $response['message'] = "Gagal menyimpan data";
+            $response['message'] = 'Gagal memperbarui data penjualan.';
         }
-        $response['token'] = $this->security->get_csrf_hash();
         echo json_encode($response);
     }
 }
