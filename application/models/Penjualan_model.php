@@ -682,49 +682,38 @@ class Penjualan_model extends CI_Model
     {
         $this->db->select('a.id_penjualan, a.kode_item, c.nama_item, a.harga, a.kuantiti, a.total');
         $this->db->from('penjualan_detail a');
-        $this->db->join('penjualan b', 'a.id_penjualan = b.id');
         $this->db->join('master_item c', 'a.kode_item = c.kode_item');
-        $this->db->where('b.id', $id);
+        $this->db->where('a.id_penjualan', $id);
 
         $query = $this->db->get();
         return $query->result();
     }
 
-    public function update_penjualan($id_penjualan)
+    public function update_penjualan($data)
     {
-        $id_penjualan = $this->input->post("id_penjualan");
-        $kode_item = $this->input->post("kode_item");
-        $harga = bilanganbulat($this->input->post("harga"));
-        $kuantiti = bilanganbulat($this->input->post("kuantiti"));
-        $total = 0;
+        // Update data pada tabel penjualan_detail
+        for ($i = 0; $i < count($data['id_penjualan']); $i++) {
+            $id_penjualan = $data['id_penjualan'][$i];
+            $kode_item = $data['kode_item'][$i];
+            $harga = $data['harga'][$i];
+            $kuantiti = $data['kuantiti'][$i];
+            $total = $data['total'][$i];
 
-        // Hapus semua penjualan_detail yang terkait dengan id_penjualan yang akan diupdate
-        $this->db->where('id_penjualan', $id_penjualan);
-        $this->db->delete('penjualan_detail');
-
-        // Iterasi untuk setiap item penjualan_detail yang baru
-        for ($i = 0; $i < count($id_penjualan); $i++) {
-            $total_harga = $kuantiti[$i] * $harga[$i];
-            $listitem = array(
-                'id_penjualan' => $id_penjualan[$i],
-                'kode_item' => $kode_item[$i],
-                'harga' => $harga[$i],
-                'kuantiti' => $kuantiti[$i],
-                'total_harga' => $total_harga
-            );
-
-            // Masukkan data baru ke dalam penjualan_detail
-            $this->db->insert("penjualan_detail", $listitem);
-
-            // Hitung total penjualan baru
-            $total += $total_harga;
+            $this->db->set('harga', $harga);
+            $this->db->set('kuantiti', $kuantiti);
+            $this->db->set('total', $total);
+            $this->db->where('id_penjualan', $id_penjualan);
+            $this->db->where('kode_item', $kode_item);
+            $this->db->update('penjualan_detail');
         }
 
-        // Memperbarui total penjualan di tabel penjualan
-        $this->db->set('total', $total);
-        $this->db->where('id', $id_penjualan);
-        $this->db->update("penjualan");
+        // Update total_harga_item pada tabel penjualan
+        $total_harga = array_sum($data['total']);
+        $this->db->set('total_harga_item', $total_harga, FALSE);
+        $this->db->set('total','total_upah_peracik + total_harga_item',FALSE);
+        $this->db->where('id', $data['id_penjualan'][0]);
+        $this->db->update('penjualan');
 
-        return TRUE;
+        return $this->db->affected_rows() > 0;
     }
 }

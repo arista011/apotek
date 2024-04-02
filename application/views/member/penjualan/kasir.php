@@ -864,69 +864,31 @@ defined('BASEPATH') or exit('No direct script access allowed');
 		});
 
 		document.getElementById("FormulirEdit").addEventListener("submit", function(e) {
-			blurForm();
-			$('.help-block').hide();
-			$('.form-group').removeClass('has-error');
-			document.getElementById("submitformEdit").setAttribute('disabled', 'disabled');
-			$('#submitformEdit').html('Loading ...');
-			var form = $('#FormulirEdit')[0];
-			var formData = new FormData(form);
-			var xhrAjax = $.ajax({
+			e.preventDefault();
+			$('#submitformEdit').prop('disabled', true).html('Loading ...');
+			var formData = new FormData(this);
+			$.ajax({
 				type: 'POST',
-				url: $(this).attr('action'),
+				url: '<?php echo base_url() ?>penjualan/updatepenjualan',
 				data: formData,
 				processData: false,
 				contentType: false,
-				cache: false,
-				dataType: 'json'
-			}).done(function(data) {
-				if (!data.success) {
-					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
-					document.getElementById("submitformEdit").removeAttribute('disabled');
-					$('#submitformEdit').html('Submit');
-					var objek = Object.keys(data.errors);
-					for (var key in data.errors) {
-						if (data.errors.hasOwnProperty(key)) {
-							var msg = '<div class="help-block" for="' + key + '">' + data.errors[key] + '</span>';
-							$('.' + key).addClass('has-error');
-							$('input[name="' + key + '"]').after(msg);
-						}
-						if (key == 'jumlah_obat') {
-							alert(data.errors[key]);
-						}
-						if (key == 'fail') {
-							new PNotify({
-								title: 'Notifikasi',
-								text: data.errors[key],
-								type: 'danger'
-							});
-						}
+				dataType: 'json',
+				success: function(data) {
+					$('#submitformEdit').prop('disabled', false).html('Submit');
+					if (!data.success) {
+						alert('Gagal memperbarui data: ' + data.message);
+					} else {
+						$('#jualdata').DataTable().ajax.reload();
+						$('#editData').modal('hide');
+						document.getElementById("FormulirEdit").reset();
+						alert('Data berhasil diperbarui: ' + data.message);
 					}
-				} else {
-					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
-					PNotify.removeAll();
-					$('#jualdata').dataTable().api().ajax.reload();
-					document.getElementById("submitformEdit").removeAttribute('disabled');
-					$('#editData').modal('hide');
-					document.getElementById("FormulirEdit").reset();
-					$('#submitformEdit').html('Submit');
-					new PNotify({
-						title: 'Notifikasi',
-						text: data.message,
-						type: 'success'
-					});
+				},
+				error: function(xhr, status, error) {
+					alert('Request gagal, browser akan direload.');
 				}
-			}).fail(function(data) {
-				new PNotify({
-					title: 'Notifikasi',
-					text: "Request gagal, browser akan direload",
-					type: 'danger'
-				});
-				window.setTimeout(function() {
-					location.reload();
-				}, 2000);
 			});
-			e.preventDefault();
 		});
 
 		function paymentsubmit(total, dibayar) {
