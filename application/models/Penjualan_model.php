@@ -699,7 +699,6 @@ class Penjualan_model extends CI_Model
             $kuantiti = $data['kuantiti'][$i];
             $total = $data['total'][$i];
 
-            $this->db->set('harga', $harga);
             $this->db->set('kuantiti', $kuantiti);
             $this->db->set('total', $total);
             $this->db->where('id_penjualan', $id_penjualan);
@@ -710,7 +709,7 @@ class Penjualan_model extends CI_Model
         // Update total_harga_item pada tabel penjualan
         $total_harga = array_sum($data['total']);
         $this->db->set('total_harga_item', $total_harga, FALSE);
-        $this->db->set('total','total_upah_peracik + total_harga_item',FALSE);
+        $this->db->set('total', 'total_upah_peracik + total_harga_item', FALSE);
         $this->db->where('id', $data['id_penjualan'][0]);
         $this->db->update('penjualan');
 

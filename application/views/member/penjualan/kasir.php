@@ -242,22 +242,27 @@ defined('BASEPATH') or exit('No direct script access allowed');
 							</div>
 						</div>
 					</section>
-					<section class="panel-featured-left panel-featured-primary">
-						<div class="panel-body">
-							<div class="panel-body  table-responsive">
-								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
-									<thead>
-										<tr>
-											<th></th>
-											<th>Tanggal</th>
-											<th>Nomor Invoice</th>
-											<th>Total Harga</th>
-										</tr>
-									</thead>
-									<tbody>
-									</tbody>
-								</table>
+					<section class="panel">
+						<header class="panel-heading">
+							<div class="row show-grid">
+								<div class="col-md-6" align="left">
+									<h2 class="panel-title">Penjualan</h2>
+								</div>
 							</div>
+						</header>
+						<div class="panel-body">
+							<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Tanggal</th>
+										<th>Nomor Invoice</th>
+										<th>Total Harga</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
 						</div>
 					</section>
 				</div>
@@ -820,7 +825,13 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					{
 						"data": "total"
 					}
-				]
+				],
+				"columnDefs": [{
+					"targets": [0],
+					"orderable": false,
+				}],
+				"lengthMenu": [5, 10, 25],
+				"pageLength": 10
 			});
 		});
 
