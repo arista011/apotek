@@ -668,12 +668,18 @@ class Penjualan_model extends CI_Model
         return $query->result();
     }
 
-    public function list_penjualan()
+    public function list_penjualan($id = null)
     {
+        if ($id !== null) {
+            $this->db->where('id', $id);
+        }
+
+        $jam_ago = date('Y-m-d H:i:s', strtotime('-8 hours'));
         $this->db->select('id, total, tanggal');
         $this->db->from('penjualan');
+        $this->db->where('tanggal_jam >=', $jam_ago);
         $this->db->order_by('tanggal', 'desc');
-
+    
         $query = $this->db->get();
         return $query->result();
     }
@@ -686,7 +692,7 @@ class Penjualan_model extends CI_Model
         $this->db->where('a.id_penjualan', $id);
 
         $query = $this->db->get();
-        return $query->result();
+        return $query->result(); // Mengembalikan hasil query
     }
 
     public function update_penjualan($data)

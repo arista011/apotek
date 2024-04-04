@@ -585,43 +585,40 @@ class Penjualan extends CI_Controller
     {
         cekajax();
         header('Content-Type: application/json');
-        $this->load->model('penjualan_model'); // Memuat model penjualan_model
-
-        // Mengambil data penjualan
+        $this->load->model('penjualan_model');
+    
+        // Mengambil data penjualan berdasarkan $id
         $result = $this->penjualan_model->list_penjualan($id);
-        $resultArray = array();
-        foreach ($result as $data) {
-            $resultArray[] = array(
-                "id" => $this->security->xss_clean($data->id),
-                "total" => $this->security->xss_clean($data->total),
-                "tanggal" => $this->security->xss_clean($data->tanggal)
+        if (!empty($result)) {
+            // Mengambil nilai id, tanggal, dan total dari hasil query
+            $data['id'] = $result[0]->id;
+            $data['tanggal'] = $result[0]->tanggal;
+            $data['total'] = $result[0]->total;
+    
+            // Mengambil detail penjualan berdasarkan $id
+            $datasub = $this->penjualan_model->edit_penjualan($id);
+            $datasubArray = array();
+            foreach ($datasub as $r) {
+                $subArray = array(
+                    "id_penjualan" => $this->security->xss_clean($r->id_penjualan),
+                    "kode_item" => $this->security->xss_clean($r->kode_item),
+                    "nama_item" => $this->security->xss_clean($r->nama_item),
+                    "kuantiti" => $this->security->xss_clean($r->kuantiti),
+                    "harga" => $this->security->xss_clean(rupiah($r->harga)),
+                    "total" => $this->security->xss_clean(rupiah($r->total))
+                );
+                $datasubArray[] =  $subArray;
+            }
+    
+            // Membuat respons JSON
+            $response = array(
+                "datarows" => $data,
+                "datasub" => $datasubArray
             );
-        }
-
-        // Mengambil data detail penjualan
-        $datasub = $this->penjualan_model->edit_penjualan($id);
-        $datasubArray = array();
-        foreach ($datasub as $r) {
-            $subArray = array(
-                "id_penjualan" => $this->security->xss_clean($r->id_penjualan),
-                "kode_item" => $this->security->xss_clean($r->kode_item),
-                "nama_item" => $this->security->xss_clean($r->nama_item),
-                "kuantiti" => $this->security->xss_clean($r->kuantiti),
-                "harga" => $this->security->xss_clean(rupiah($r->harga)),
-                "total" => $this->security->xss_clean(rupiah($r->total))
-            );
-            $datasubArray[] =  $subArray;
-        }
-
-        // Menggabungkan data ke dalam satu JSON
-        $response = array(
-            "datarows" => $resultArray,
-            "datasub" => $datasubArray
-        );
-
-        echo json_encode($response);
+            $response['token'] = $this->security->get_csrf_hash();
+            echo json_encode($response);
+        } 
     }
-
     public function updatepenjualan()
     {
         cekajax();

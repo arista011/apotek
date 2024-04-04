@@ -242,27 +242,22 @@ defined('BASEPATH') or exit('No direct script access allowed');
 							</div>
 						</div>
 					</section>
-					<section class="panel">
-						<header class="panel-heading">
-							<div class="row show-grid">
-								<div class="col-md-6" align="left">
-									<h2 class="panel-title">Penjualan</h2>
-								</div>
-							</div>
-						</header>
+					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
-							<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
-								<thead>
-									<tr>
-										<th></th>
-										<th>Tanggal</th>
-										<th>Nomor Invoice</th>
-										<th>Total Harga</th>
-									</tr>
-								</thead>
-								<tbody>
-								</tbody>
-							</table>
+							<div class="panel-body  table-responsive">
+								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
+									<thead>
+										<tr>
+											<th></th>
+											<th>Tanggal</th>
+											<th>Nomor Invoice</th>
+											<th>Total Harga</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</section>
 				</div>
@@ -825,13 +820,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					{
 						"data": "total"
 					}
-				],
-				"columnDefs": [{
-					"targets": [0],
-					"orderable": false,
-				}],
-				"lengthMenu": [5, 10, 25],
-				"pageLength": 10
+				]
 			});
 		});
 
@@ -843,24 +832,28 @@ defined('BASEPATH') or exit('No direct script access allowed');
 				url: '<?php echo base_url() ?>penjualan/editpenjualan/' + id,
 				dataType: 'json',
 				success: function(response) {
-					$('#id').val(response.datarows[0].id);
-					$('#tanggal').val(response.datarows[0].tanggal);
-					$('#total').val(response.datarows[0].total);
-					var datarow = '';
-					$.each(response.datasub, function(i, itemsub) {
-						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
-						datarow += '<tr><td><input type="text" value="' + itemsub.id_penjualan + '"  name="id_penjualan[]" class="form-control id_penjualan" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.kode_item + '"  name="kode_item[]" class="form-control kode_item" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.nama_item + '"  class="form-control nama_item" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.harga + '"  name="harga[]" class="form-control harga" readonly></td>';
-						datarow += '<td><input type="number"  value="' + itemsub.kuantiti + '"  name="kuantiti[]" class="form-control kuantiti"></td>';
-						datarow += '<td><input type="text"  value="' + total + '"  name="total[]" class="form-control total" readonly></td>';
-						datarow += '</tr>';
-					});
-					$('.listitemedit tbody').append(datarow);
-				},
-				error: function(xhr, status, error) {
-					console.error(xhr.responseText);
+					// Periksa apakah data datarows tidak kosong
+					if (response.datarows !== null) {
+						$('#id').val(response.datarows.id);
+						$('#tanggal').val(response.datarows.tanggal);
+						$('#total').val(response.datarows.total);
+					}
+
+					// Periksa apakah data datasub tidak kosong
+					if (response.datasub !== null && response.datasub.length > 0) {
+						var datasub = '';
+						$.each(response.datasub, function(i, itemsub) {
+							var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
+							datasub += '<tr><td><input type="text" value="' + itemsub.id_penjualan + '"  name="id_penjualan[]" class="form-control id_penjualan" readonly></td>';
+							datasub += '<td><input type="text" value="' + itemsub.kode_item + '"  name="kode_item[]" class="form-control kode_item" readonly></td>';
+							datasub += '<td><input type="text" value="' + itemsub.nama_item + '"  class="form-control nama_item" readonly></td>';
+							datasub += '<td><input type="text" value="' + itemsub.harga + '"  name="harga[]" class="form-control harga" readonly></td>';
+							datasub += '<td><input type="number"  value="' + itemsub.kuantiti + '"  name="kuantiti[]" class="form-control kuantiti"></td>';
+							datasub += '<td><input type="text"  value="' + total + '"  name="total[]" class="form-control total" readonly></td>';
+							datasub += '</tr>';
+						});
+						$('.listitemedit tbody').append(datasub);
+					}
 				}
 			});
 			return false;
@@ -878,26 +871,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			e.preventDefault();
 			$('#submitformEdit').prop('disabled', true).html('Loading ...');
 			var formData = new FormData(this);
-			$.ajax({
+			var xhrAjax = $.ajax({
 				type: 'POST',
 				url: '<?php echo base_url() ?>penjualan/updatepenjualan',
 				data: formData,
 				processData: false,
 				contentType: false,
-				dataType: 'json',
-				success: function(data) {
+				cache: false,
+				dataType: 'json'
+			}).done(function(data) {
+				if (!data.success) {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
 					$('#submitformEdit').prop('disabled', false).html('Submit');
-					if (!data.success) {
-						alert('Gagal memperbarui data: ' + data.message);
-					} else {
-						$('#jualdata').DataTable().ajax.reload();
-						$('#editData').modal('hide');
-						document.getElementById("FormulirEdit").reset();
-						alert('Data berhasil diperbarui: ' + data.message);
-					}
-				},
-				error: function(xhr, status, error) {
-					alert('Request gagal, browser akan direload.');
+					alert('Gagal memperbarui data: ' + data.message);
+				} else {
+					$('input[name=<?php echo $this->security->get_csrf_token_name(); ?>]').val(data.token);
+					$('#jualdata').DataTable().ajax.reload();
+					$('#editData').modal('hide');
+					document.getElementById("FormulirEdit").reset();
+					alert('Data berhasil diperbarui: ' + data.message);
 				}
 			});
 		});
