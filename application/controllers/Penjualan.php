@@ -585,10 +585,11 @@ class Penjualan extends CI_Controller
     {
         cekajax();
         header('Content-Type: application/json');
-        $this->load->model('penjualan_model'); // Memuat model penjualan_model
-
-        // Mengambil data penjualan
+        $this->load->model('penjualan_model');
+    
+        // Mengambil data penjualan berdasarkan $id
         $result = $this->penjualan_model->list_penjualan($id);
+<<<<<<< HEAD
         $resultArray = array();
         foreach ($result as $data) {
             $resultArray[] = array(
@@ -619,8 +620,38 @@ class Penjualan extends CI_Controller
             "datasub" => $datasubArray
         );
         echo json_encode($response);
+=======
+        if (!empty($result)) {
+            // Mengambil nilai id, tanggal, dan total dari hasil query
+            $data['id'] = $result[0]->id;
+            $data['tanggal'] = $result[0]->tanggal;
+            $data['total'] = $result[0]->total;
+    
+            // Mengambil detail penjualan berdasarkan $id
+            $datasub = $this->penjualan_model->edit_penjualan($id);
+            $datasubArray = array();
+            foreach ($datasub as $r) {
+                $subArray = array(
+                    "id_penjualan" => $this->security->xss_clean($r->id_penjualan),
+                    "kode_item" => $this->security->xss_clean($r->kode_item),
+                    "nama_item" => $this->security->xss_clean($r->nama_item),
+                    "kuantiti" => $this->security->xss_clean($r->kuantiti),
+                    "harga" => $this->security->xss_clean(rupiah($r->harga)),
+                    "total" => $this->security->xss_clean(rupiah($r->total))
+                );
+                $datasubArray[] =  $subArray;
+            }
+    
+            // Membuat respons JSON
+            $response = array(
+                "datarows" => $data,
+                "datasub" => $datasubArray
+            );
+            $response['token'] = $this->security->get_csrf_hash();
+            echo json_encode($response);
+        } 
+>>>>>>> 8371a8914dc15880f20d57300d3648cece34a5a9
     }
-
     public function updatepenjualan()
     {
         cekajax();

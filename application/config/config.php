@@ -455,7 +455,11 @@ $config['csrf_token_name'] = 'csrf_apotek_token';
 $config['csrf_cookie_name'] = 'csrf_apotek_cookie';
 $config['csrf_expire'] = 7200;
 $config['csrf_regenerate'] = FALSE;
+<<<<<<< HEAD
 $config['csrf_exclude_uris'] = array("stok/viewbarcode", "stok/viewhtmlkartustok", "pembelian/datapo", "pembelian/datapembelian", "penjualan/editpenjualan", "penjualan/updatepenjualan/");
+=======
+$config['csrf_exclude_uris'] = array("stok/viewbarcode","stok/viewhtmlkartustok","pembelian/datapo","pembelian/datapembelian","penjualan/editpenjualan","penjualan/updatepenjualan/");
+>>>>>>> 8371a8914dc15880f20d57300d3648cece34a5a9
 
 /*
 |--------------------------------------------------------------------------
