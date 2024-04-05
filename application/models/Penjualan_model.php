@@ -670,9 +670,9 @@ class Penjualan_model extends CI_Model
 
     public function list_penjualan()
     {
-        $this->db->select('id, total, tanggal');
+        $this->db->select('id, total, tanggal_jam');
         $this->db->from('penjualan');
-        $this->db->order_by('tanggal', 'desc');
+        $this->db->order_by('tanggal_jam', 'desc');
 
         $query = $this->db->get();
         return $query->result();

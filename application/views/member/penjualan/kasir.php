@@ -817,7 +817,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 						}
 					},
 					{
-						"data": "tanggal"
+						"data": "tanggal_jam"
 					},
 					{
 						"data": "id"
@@ -825,13 +825,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					{
 						"data": "total"
 					}
-				],
-				"columnDefs": [{
-					"targets": [0],
-					"orderable": false,
-				}],
-				"lengthMenu": [5, 10, 25],
-				"pageLength": 10
+				]
 			});
 		});
 
@@ -844,7 +838,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 				dataType: 'json',
 				success: function(response) {
 					$('#id').val(response.datarows[0].id);
-					$('#tanggal').val(response.datarows[0].tanggal);
+					$('#tanggal').val(response.datarows[0].tanggal_jam);
 					$('#total').val(response.datarows[0].total);
 					var datarow = '';
 					$.each(response.datasub, function(i, itemsub) {

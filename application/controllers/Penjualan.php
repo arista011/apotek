@@ -594,7 +594,7 @@ class Penjualan extends CI_Controller
             $resultArray[] = array(
                 "id" => $this->security->xss_clean($data->id),
                 "total" => $this->security->xss_clean($data->total),
-                "tanggal" => $this->security->xss_clean($data->tanggal)
+                "tanggal_jam" => $this->security->xss_clean($data->tanggal_jam)
             );
         }
 
@@ -618,7 +618,6 @@ class Penjualan extends CI_Controller
             "datarows" => $resultArray,
             "datasub" => $datasubArray
         );
-
         echo json_encode($response);
     }
 
