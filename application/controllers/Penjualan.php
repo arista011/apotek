@@ -576,26 +576,36 @@ class Penjualan extends CI_Controller
     {
         cekajax();
         header('Content-Type: application/json');
-        $this->load->model('penjualan_model'); // Memuat model penjualan_model
-        $listjual = $this->penjualan_model->list_penjualan();
-        echo json_encode($listjual);
+        $this->load->model('penjualan_model');
+        $limit = $this->input->get('length');
+        $start = $this->input->get('start');
+        $id = $this->input->get('id');
+        $listjual = $this->penjualan_model->list_penjualan($limit, $start, $id);
+        $totalRecords = $listjual->num_rows();
+
+        $response = array(
+            "draw" => $this->input->get('draw'),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $totalRecords,
+            "data" =>  $listjual->result_array()
+        );
+        echo json_encode($response);
     }
 
     public function editpenjualan($id)
     {
         cekajax();
         header('Content-Type: application/json');
-        $this->load->model('penjualan_model');
-    
-        // Mengambil data penjualan berdasarkan $id
-        $result = $this->penjualan_model->list_penjualan($id);
-        if (!empty($result)) {
-            // Mengambil nilai id, tanggal, dan total dari hasil query
-            $data['id'] = $result[0]->id;
-            $data['tanggal'] = $result[0]->tanggal;
-            $data['total'] = $result[0]->total;
-    
-            // Mengambil detail penjualan berdasarkan $id
+        $result = $this->penjualan_model->list_penjualan(null, null, $id);
+        $data = $result->row(); // Menggunakan row() untuk mendapatkan satu baris hasil
+
+        if (!empty($data)) {
+            $response = array(
+                "id" => $data->id,
+                "tanggal_jam" => $data->tanggal_jam,
+                "total" => $data->total
+            );
+
             $datasub = $this->penjualan_model->edit_penjualan($id);
             $datasubArray = array();
             foreach ($datasub as $r) {
@@ -609,15 +619,15 @@ class Penjualan extends CI_Controller
                 );
                 $datasubArray[] =  $subArray;
             }
-    
+
             // Membuat respons JSON
             $response = array(
                 "datarows" => $data,
-                "datasub" => $datasubArray
+                "datasub" => $datasubArray,
+                "token" => $this->security->get_csrf_hash()
             );
-            $response['token'] = $this->security->get_csrf_hash();
             echo json_encode($response);
-        } 
+        }
     }
     public function updatepenjualan()
     {

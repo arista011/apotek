@@ -245,7 +245,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
 							<div class="panel-body  table-responsive">
-								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
+								<table class="table table-bordered table-hover table-striped" id="jualdata">
 									<thead>
 										<tr>
 											<th></th>
@@ -281,13 +281,13 @@ defined('BASEPATH') or exit('No direct script access allowed');
 								<div class="form-group mt-lg id">
 									<label class="col-sm-3 control-label">Invoice<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" name="id" id="id" class="form-control id" readonly />
+										<input type="text" name="id" id="id" class="form-control" readonly />
 									</div>
 								</div>
 								<div class="form-group mt-lg tanggal">
 									<label class="col-sm-3 control-label">Tanggal<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" readonly />
+										<input type="text" name="tanggal_jam" id="tanggal_jam" class="form-control" readonly />
 									</div>
 								</div>
 							</div>
@@ -798,21 +798,22 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.init.js"></script>
 	<script>
 		$(document).ready(function() {
-			$('#jualdata').DataTable({
+			var table = $('#jualdata').DataTable({
+				"processing": true,
 				"serverSide": true,
 				"ajax": {
 					"url": "<?php echo base_url('penjualan/listpenjualan'); ?>",
-					"type": "GET",
-					"dataSrc": ""
+					"type": "get",
+					"dataSrc": "data"
 				},
 				"columns": [{
 						"data": null,
 						"render": function(data, type, row, meta) {
-							return '<button class="btn btn-info btn-sm" onclick="edit(' + row.id + ')">Edit</button>';
+							return '<button id="edit" class="btn btn-info btn-sm" onclick="edit(this)" data-id="' + row.id + '">Edit</button>';
 						}
 					},
 					{
-						"data": "tanggal"
+						"data": "tanggal_jam"
 					},
 					{
 						"data": "id"
@@ -820,11 +821,18 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					{
 						"data": "total"
 					}
-				]
+				],
+				"columnDefs": [{
+					"targets": [0],
+					"orderable": false,
+				}],
+				"lengthMenu": [5, 10, 25]
 			});
 		});
 
-		function edit(id) {
+		function edit(elem) {
+			var id = $(elem).data("id");
+			document.getElementById("id").setAttribute('value', id);
 			$(".listitemedit").find("tr:not(:first)").remove();
 			$('#editData').modal();
 			$.ajax({
@@ -835,7 +843,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					// Periksa apakah data datarows tidak kosong
 					if (response.datarows !== null) {
 						$('#id').val(response.datarows.id);
-						$('#tanggal').val(response.datarows.tanggal);
+						$('#tanggal_jam').val(response.datarows.tanggal_jam);
 						$('#total').val(response.datarows.total);
 					}
 
