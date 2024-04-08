@@ -281,13 +281,13 @@ defined('BASEPATH') or exit('No direct script access allowed');
 								<div class="form-group mt-lg id">
 									<label class="col-sm-3 control-label">Invoice<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" name="id" id="id" class="form-control id" readonly />
+										<input type="text" name="id" id="id" class="form-control" readonly />
 									</div>
 								</div>
 								<div class="form-group mt-lg tanggal">
 									<label class="col-sm-3 control-label">Tanggal<span class="required">*</span></label>
 									<div class="col-sm-9">
-										<input type="text" name="tanggal" id="tanggal" class="form-control tanggal" readonly />
+										<input type="text" name="tanggal_jam" id="tanggal_jam" class="form-control" readonly />
 									</div>
 								</div>
 							</div>
@@ -808,7 +808,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 				"columns": [{
 						"data": null,
 						"render": function(data, type, row, meta) {
-							return '<button class="btn btn-info btn-sm" onclick="edit(' + row.id + ')">Edit</button>';
+							return '<button id="edit" class="btn btn-info btn-sm"  onclick="edit(this)" data-id="' + row.id + '">Edit</button>';
 						}
 					},
 					{
@@ -824,7 +824,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 			});
 		});
 
-		function edit(id) {
+		function edit(elem) {
+			var id = $(elem).data("id");
 			$(".listitemedit").find("tr:not(:first)").remove();
 			$('#editData').modal();
 			$.ajax({
@@ -832,34 +833,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 				url: '<?php echo base_url() ?>penjualan/editpenjualan/' + id,
 				dataType: 'json',
 				success: function(response) {
-<<<<<<< HEAD
-					$('#id').val(response.datarows[0].id);
-					$('#tanggal').val(response.datarows[0].tanggal_jam);
-					$('#total').val(response.datarows[0].total);
-					var datarow = '';
-					$.each(response.datasub, function(i, itemsub) {
-						var total = parseInt(itemsub.harga.replace(/\D/g, '')) * parseInt(itemsub.kuantiti.replace(/\D/g, ''));
-						datarow += '<tr><td><input type="text" value="' + itemsub.id_penjualan + '"  name="id_penjualan[]" class="form-control id_penjualan" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.kode_item + '"  name="kode_item[]" class="form-control kode_item" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.nama_item + '"  class="form-control nama_item" readonly></td>';
-						datarow += '<td><input type="text" value="' + itemsub.harga + '"  name="harga[]" class="form-control harga" readonly></td>';
-						datarow += '<td><input type="number"  value="' + itemsub.kuantiti + '"  name="kuantiti[]" class="form-control kuantiti"></td>';
-						datarow += '<td><input type="text"  value="' + total + '"  name="total[]" class="form-control total" readonly></td>';
-						datarow += '</tr>';
-					});
-					$('.listitemedit tbody').append(datarow);
-				},
-				error: function(xhr, status, error) {
-					console.error(xhr.responseText);
-=======
-					// Periksa apakah data datarows tidak kosong
-					if (response.datarows !== null) {
+					if (response.datarows !== null && response.datarows.length > 0) {
 						$('#id').val(response.datarows.id);
-						$('#tanggal').val(response.datarows.tanggal);
+						$('#tanggal_jam').val(response.datarows.tanggal_jam);
 						$('#total').val(response.datarows.total);
 					}
 
-					// Periksa apakah data datasub tidak kosong
 					if (response.datasub !== null && response.datasub.length > 0) {
 						var datasub = '';
 						$.each(response.datasub, function(i, itemsub) {
@@ -874,7 +853,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 						});
 						$('.listitemedit tbody').append(datasub);
 					}
->>>>>>> 8371a8914dc15880f20d57300d3648cece34a5a9
 				}
 			});
 			return false;
