@@ -354,16 +354,13 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
                     // Hitung selisih hari antara tanggal kadaluarsa dan hari ini
                     var diffDays = Math.ceil((expiredDate - today) / (1000 * 60 * 60 * 24));
-
-                    var bgColor = ''; // Inisialisasi warna latar belakang
-
-                    // Tentukan warna berdasarkan selisih hari
+                    var bgColor = '';
                     if (diffDays >= 0) {
-                        // Jika tanggal kadaluarsa sudah lewat, beri warna merah
-                        bgColor = 'red';
-                    } else if (diffDays <= 30) {
-                        // Jika kurang dari 30 hari sebelum tanggal kadaluarsa, beri warna kuning
                         bgColor = 'yellow';
+                    } else if (diffDays <= 30) {
+                        bgColor = 'red';
+                    } else {
+                        bgColor = '';
                     }
                     datarow += "<tr style='background-color:" + bgColor + "'>";
                     datarow += "<td>" + i + "</td>";

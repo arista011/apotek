@@ -668,20 +668,18 @@ class Penjualan_model extends CI_Model
         return $query->result();
     }
 
-    public function list_penjualan($id = null)
+    public function list_penjualan($limit, $start, $id = null)
     {
         if ($id !== null) {
             $this->db->where('id', $id);
         }
 
-        // $jam_ago = date('Y-m-d H:i:s', strtotime('-8 hours'));
         $this->db->select('id, total, tanggal_jam');
         $this->db->from('penjualan');
-        // $this->db->where('tanggal_jam >=', $jam_ago);
         $this->db->order_by('tanggal_jam', 'desc');
+        $this->db->limit($limit, $start);
 
-        $query = $this->db->get();
-        return $query->result();
+        return $this->db->get();
     }
 
     public function edit_penjualan($id)

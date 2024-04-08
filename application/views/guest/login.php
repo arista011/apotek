@@ -29,10 +29,10 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 
 			<div class="panel col-md-8">
-				<div class="center-sign">
-					<a href="<?php echo base_url() ?>" class="logo pull-left">
-						<img src="<?php echo base_url() ?>assets/images/<?php echo $this->db->get_where('profil_apotek', array('id' => '1'), 1)->row()->logo; ?>" height="80" alt="Logo" />
-					</a>
+				<div class="panel-sign">
+					<a href="<?php echo base_url() ?>" class="logo">
+						<img src="<?php echo base_url() ?>assets/images/<?php echo $this->db->get_where('profil_apotek', array('id' => '1'), 1)->row()->logo; ?>" height="100" alt="Logo" />
+					</a><br />
 				</div>
 				<div class="panel-body">
 					<?php echo form_open('login/authlogin', ' id="Formulir" '); ?>

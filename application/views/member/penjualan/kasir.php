@@ -245,7 +245,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					<section class="panel-featured-left panel-featured-primary">
 						<div class="panel-body">
 							<div class="panel-body  table-responsive">
-								<table class="table table-responsive table-bordered table-hover table-striped dataTable no-footer" id="jualdata">
+								<table class="table table-bordered table-hover table-striped" id="jualdata">
 									<thead>
 										<tr>
 											<th></th>
@@ -798,17 +798,18 @@ defined('BASEPATH') or exit('No direct script access allowed');
 	<script src="<?php echo base_url() ?>assets/javascripts/theme.init.js"></script>
 	<script>
 		$(document).ready(function() {
-			$('#jualdata').DataTable({
+			var table = $('#jualdata').DataTable({
+				"processing": true,
 				"serverSide": true,
 				"ajax": {
 					"url": "<?php echo base_url('penjualan/listpenjualan'); ?>",
-					"type": "GET",
-					"dataSrc": ""
+					"type": "get",
+					"dataSrc": "data"
 				},
 				"columns": [{
 						"data": null,
 						"render": function(data, type, row, meta) {
-							return '<button id="edit" class="btn btn-info btn-sm"  onclick="edit(this)" data-id="' + row.id + '">Edit</button>';
+							return '<button id="edit" class="btn btn-info btn-sm" onclick="edit(this)" data-id="' + row.id + '">Edit</button>';
 						}
 					},
 					{
@@ -820,12 +821,18 @@ defined('BASEPATH') or exit('No direct script access allowed');
 					{
 						"data": "total"
 					}
-				]
+				],
+				"columnDefs": [{
+					"targets": [0],
+					"orderable": false,
+				}],
+				"lengthMenu": [5, 10, 25]
 			});
 		});
 
 		function edit(elem) {
 			var id = $(elem).data("id");
+			document.getElementById("id").setAttribute('value', id);
 			$(".listitemedit").find("tr:not(:first)").remove();
 			$('#editData').modal();
 			$.ajax({
