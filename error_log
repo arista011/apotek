@@ -1,0 +1,7 @@
+[06-Aug-2024 16:43:22 Asia/Bangkok] PHP Parse error:  syntax error, unexpected ';' in /home/apoteks6/public_html/application/models/Penjualan_model.php on line 546
+[06-Aug-2024 17:04:07 Asia/Bangkok] PHP Parse error:  syntax error, unexpected ')', expecting ']' in /home/apoteks6/public_html/application/models/Penjualan_model.php on line 761
+[06-Aug-2024 17:04:34 Asia/Bangkok] PHP Fatal error:  Call to a member function set() on null in /home/apoteks6/public_html/application/models/Penjualan_model.php on line 759
+[06-Aug-2024 17:08:00 Asia/Bangkok] PHP Fatal error:  Call to a member function get() on null in /home/apoteks6/public_html/application/models/Penjualan_model.php on line 759
+[12-Aug-2024 12:38:06 Asia/Bangkok] PHP Parse error:  syntax error, unexpected 'distinct' (T_STRING) in /home/apoteks6/public_html/application/models/Dashboard_model.php on line 51
+[19-Aug-2024 11:31:24 Asia/Bangkok] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 130968 bytes) in /home/apoteks6/public_html/system/database/DB_driver.php on line 1967
+[19-Aug-2024 11:33:35 Asia/Bangkok] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 130968 bytes) in /home/apoteks6/public_html/system/database/DB_driver.php on line 1967
